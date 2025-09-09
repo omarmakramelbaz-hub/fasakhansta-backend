@@ -1,0 +1,71 @@
+// Give the service worker access to Firebase Messaging.
+// Note that you can only use Firebase Messaging here. Other Firebase libraries
+// are not available in the service worker.
+importScripts('https://www.gstatic.com/firebasejs/7.9.3/firebase-app.js');
+importScripts('https://www.gstatic.com/firebasejs/7.9.3/firebase-messaging.js');
+
+// Initialize the Firebase app in the service worker by passing in
+// your app's Firebase config object.
+// https://firebase.google.com/docs/web/setup#config-object
+const firebaseConfig = {
+    apiKey: "AIzaSyB0KKM-Dm-7wOk-S3zLkBAjMn8Z4JL9snA",
+  authDomain: "faskhaninja.firebaseapp.com",
+  projectId: "faskhaninja",
+  storageBucket: "faskhaninja.appspot.com",
+  messagingSenderId: "547950781924",
+  appId: "1:547950781924:web:7511c8e2cc79e2cc28d3f1",
+  measurementId: "G-2BN39RQZDR"
+};
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
+// Retrieve an instance of Firebase Messaging
+const messaging = firebase.messaging();
+
+// No need to set a background message handler if we handle notifications manually
+// messaging.setBackgroundMessageHandler((payload) => {});
+
+// Handle push notifications
+self.addEventListener('push', function(event) {
+    const payload = event.data ? event.data.json() : {};
+
+    // Check if the payload contains a notification
+    if (!payload.notification) {
+        console.error('No notification in payload:', payload);
+        return;
+    }
+
+    // Extract notification details
+    const title = payload.notification.title || 'Default Title'; // Fallback title
+    const body = payload.notification.body;
+    const icon = payload.data.icon || '/default-icon.png'; // Ensure the icon is accessible
+    const clickAction = payload.data.click_action || '/'; // Fallback to home if not set
+
+    // Customize the notification options
+    const options = {
+        body: body,
+        icon: icon,
+        vibrate: [200, 100, 200, 100, 500], // Long vibration pattern
+        data: {
+            click_action: clickAction // Store click action in data for click handling
+        }
+    };
+
+    // Show the notification
+    event.waitUntil(
+        self.registration.showNotification(title, options)
+    );
+     const audio = new Audio('https://backend.smartvision4p.com/faskhaNinja/public/analog-tape-test-tone-from-cassette-1995-101203.mp3');
+    audio.play()
+});
+
+// Handle notification click events
+self.addEventListener('notificationclick', function(event) {
+    event.notification.close(); // Close the notification
+
+    // Retrieve the click action from notification data
+    const clickAction = event.notification.data.click_action || '/'; // Fallback to home if not set
+    event.waitUntil(clients.openWindow(clickAction));
+     const audio = new Audio('https://backend.smartvision4p.com/faskhaNinja/public/analog-tape-test-tone-from-cassette-1995-101203.mp3');
+    audio.play()
+});

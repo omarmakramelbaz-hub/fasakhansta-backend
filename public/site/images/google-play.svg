@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="188.542" height="55.865" viewBox="0 0 188.542 55.865">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.915" y1="0.05" x2="0" y2="0.719" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#00a0ff"/>
+      <stop offset="0.007" stop-color="#00a1ff"/>
+      <stop offset="0.26" stop-color="#00beff"/>
+      <stop offset="0.512" stop-color="#00d2ff"/>
+      <stop offset="0.76" stop-color="#00dfff"/>
+      <stop offset="1" stop-color="#00e3ff"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" x1="1.076" y1="0.5" x2="0" y2="0.5" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#ffe000"/>
+      <stop offset="0.409" stop-color="#ffbd00"/>
+      <stop offset="0.775" stop-color="orange"/>
+      <stop offset="1" stop-color="#ff9c00"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-3" x1="0.862" y1="0.178" x2="0" y2="1.947" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#ff3a44"/>
+      <stop offset="1" stop-color="#c31162"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-4" x2="0.421" y2="0.249" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#32a071"/>
+      <stop offset="0.068" stop-color="#2da771"/>
+      <stop offset="0.476" stop-color="#15cf74"/>
+      <stop offset="0.801" stop-color="#06e775"/>
+      <stop offset="1" stop-color="#00f076"/>
+    </linearGradient>
+  </defs>
+  <g id="Google_Play" data-name="Google Play" transform="translate(0 -18)">
+    <g id="Bg" transform="translate(0 18)">
+      <path id="Vector" d="M6.983,0H181.559a6.983,6.983,0,0,1,6.983,6.983v41.9a6.983,6.983,0,0,1-6.983,6.983H6.983A6.983,6.983,0,0,1,0,48.881V6.983A6.983,6.983,0,0,1,6.983,0Z" transform="translate(0 0)"/>
+      <path id="Vector-2" data-name="Vector" d="M181.559,1.117a5.872,5.872,0,0,1,5.866,5.866v41.9a5.873,5.873,0,0,1-5.866,5.866H6.983a5.873,5.873,0,0,1-5.866-5.866V6.983A5.872,5.872,0,0,1,6.983,1.117Zm0-1.117H6.983A7,7,0,0,0,0,6.983v41.9a7,7,0,0,0,6.983,6.983H181.559a7,7,0,0,0,6.983-6.983V6.983A7,7,0,0,0,181.559,0Z" transform="translate(0 0)" fill="#a6a6a6"/>
+    </g>
+    <g id="Group_77216" data-name="Group 77216" transform="translate(-1 17.863)">
+      <g id="Text" transform="translate(33.65 13.725)">
+        <path id="Vector-3" data-name="Vector" d="M37.84,6.571a5.94,5.94,0,1,0,5.963,5.94,5.855,5.855,0,0,0-5.963-5.94Zm0,9.54a3.609,3.609,0,1,1,3.352-3.6,3.436,3.436,0,0,1-3.352,3.6ZM24.833,6.571a5.94,5.94,0,1,0,5.962,5.94,5.855,5.855,0,0,0-5.962-5.94Zm0,9.54a3.609,3.609,0,1,1,3.352-3.6,3.436,3.436,0,0,1-3.352,3.6ZM9.36,8.394v2.52h6.03a5.259,5.259,0,0,1-1.373,3.173A6.173,6.173,0,0,1,9.36,15.931a6.706,6.706,0,0,1,0-13.41,6.427,6.427,0,0,1,4.545,1.8l1.777-1.777A8.791,8.791,0,0,0,9.36,0a9.226,9.226,0,1,0,0,18.45A8.434,8.434,0,0,0,15.8,15.864a8.327,8.327,0,0,0,2.183-5.895,8.2,8.2,0,0,0-.135-1.575Zm63.278,1.957a5.521,5.521,0,0,0-5.085-3.78,5.645,5.645,0,0,0-5.6,5.94,5.813,5.813,0,0,0,5.895,5.94,5.908,5.908,0,0,0,4.95-2.632l-2.025-1.35a3.392,3.392,0,0,1-2.925,1.642,3.022,3.022,0,0,1-2.88-1.8l7.943-3.285Zm-8.1,1.98a3.258,3.258,0,0,1,3.1-3.465,2.3,2.3,0,0,1,2.205,1.26Zm-6.458,5.76h2.61V.631h-2.61ZM53.806,7.9h-.09a4.116,4.116,0,0,0-3.128-1.327,5.945,5.945,0,0,0,0,11.88,4.05,4.05,0,0,0,3.128-1.35h.09v.855c0,2.273-1.215,3.487-3.173,3.487a3.287,3.287,0,0,1-2.992-2.115l-2.273.945a5.661,5.661,0,0,0,5.265,3.51c3.06,0,5.648-1.8,5.648-6.188V6.931H53.806Zm-2.992,8.212a3.613,3.613,0,0,1,0-7.2,3.347,3.347,0,0,1,3.172,3.622,3.319,3.319,0,0,1-3.172,3.578ZM84.864.632H78.62v17.46h2.606V11.476h3.639a5.43,5.43,0,1,0,0-10.845Zm.067,8.415H81.225V3.061h3.706a2.993,2.993,0,1,1,0,5.985Zm16.105-2.507a4.893,4.893,0,0,0-4.65,2.673l2.314.966a2.469,2.469,0,0,1,2.381-1.28,2.509,2.509,0,0,1,2.74,2.246v.18a5.765,5.765,0,0,0-2.718-.674c-2.493,0-5.031,1.37-5.031,3.931a4.033,4.033,0,0,0,4.335,3.841,3.676,3.676,0,0,0,3.324-1.707h.09v1.348h2.516V11.368c0-3.1-2.314-4.829-5.3-4.829Zm-.315,9.569c-.854,0-2.044-.427-2.044-1.482,0-1.348,1.482-1.864,2.763-1.864a4.643,4.643,0,0,1,2.381.584,3.159,3.159,0,0,1-3.1,2.763ZM115.5,6.921l-2.987,7.57h-.09l-3.1-7.57h-2.808l4.65,10.58-2.65,5.885h2.718L118.4,6.921ZM92.029,18.091h2.606V.632H92.029Z" transform="translate(-17.65 14.219)" fill="#fff"/>
+        <text id="حمل_الان" data-name="حمل الان" transform="translate(100.35 6.411)" fill="#fff" font-size="15" font-family="Tajawal-Bold, Tajawal" font-weight="700"><tspan x="-59.4" y="0">حمل الان</tspan></text>
+      </g>
+      <g id="Google_Play_logo" data-name="Google Play logo" transform="translate(142.923 14.096)">
+        <path id="Vector-4" data-name="Vector" d="M.651.1A2.8,2.8,0,0,0,.005,2.063V32.951a2.8,2.8,0,0,0,.646,1.962l.1.1,17.3-17.3V17.3L.755,0Z" transform="translate(0 0.467)" fill="url(#linear-gradient)"/>
+        <path id="Vector-5" data-name="Vector" d="M5.767,11.947,0,6.177V5.769L5.769,0,5.9.074l6.833,3.883c1.952,1.109,1.952,2.923,0,4.033L5.9,11.873Z" transform="translate(18.057 12.001)" fill="url(#linear-gradient-2)"/>
+        <path id="Vector-6" data-name="Vector" d="M23.3,5.9,17.406,0,0,17.406a2.272,2.272,0,0,0,2.9.086Z" transform="translate(0.651 17.974)" fill="url(#linear-gradient-3)"/>
+        <path id="Vector-7" data-name="Vector" d="M23.3,12.075,2.9.482A2.272,2.272,0,0,0,0,.568L17.406,17.974Z" transform="translate(0.651 0)" fill="url(#linear-gradient-4)"/>
+        <path id="Vector-8" data-name="Vector" d="M23.174,0,2.9,11.518a2.326,2.326,0,0,1-2.8.015l-.1.1.1.1h0a2.325,2.325,0,0,0,2.8-.015L23.3.13Z" transform="translate(0.651 23.743)" opacity="0.2"/>
+        <path id="Vector-9" data-name="Vector" d="M.651,1.962A2.8,2.8,0,0,1,.005,0V.2A2.8,2.8,0,0,0,.651,2.166l.1-.1Z" transform="translate(0 33.214)" opacity="0.12"/>
+        <path id="Vector-10" data-name="Vector" d="M6.963,1.812,0,5.769l.13.13L6.963,2.016a2.451,2.451,0,0,0,1.007-.808A2.451,2.451,0,0,0,8.427,0,2.6,2.6,0,0,1,7.91,1.079a2.6,2.6,0,0,1-.946.733Z" transform="translate(23.826 17.975)" opacity="0.12"/>
+        <path id="Vector-11" data-name="Vector" d="M3.549.674,30.784,16.149a2.6,2.6,0,0,1,1.464,1.813,2.449,2.449,0,0,0-1.464-2.017L3.549.47C1.6-.639,0,.282,0,2.518v.2C0,.486,1.6-.435,3.549.674Z" transform="translate(0.005 0.013)" fill="#fff" opacity="0.25"/>
+      </g>
+    </g>
+  </g>
+</svg>

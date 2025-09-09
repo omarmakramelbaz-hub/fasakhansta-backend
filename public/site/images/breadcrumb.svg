@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1660" height="635" viewBox="0 0 1660 635">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="Rectangle_18469" data-name="Rectangle 18469" width="1660" height="635" transform="translate(1926 -1051)" fill="#fff"/>
+    </clipPath>
+  </defs>
+  <g id="Mask_Group_1" data-name="Mask Group 1" transform="translate(-1926 1051)" clip-path="url(#clip-path)">
+    <g id="Background" transform="translate(1926.091 -1351.841)">
+      <ellipse id="Purple_Circle" data-name="Purple Circle" cx="234.413" cy="234" rx="234.413" ry="234" transform="translate(1255.075 24.922)" fill="#fd7201" opacity="0.6"/>
+      <circle id="Turquoise_Circle" data-name="Turquoise Circle" cx="96.742" cy="96.742" r="96.742" transform="translate(957.407 603.721)" fill="#fd7201" opacity="0.6"/>
+      <path id="BG" d="M0,0H1662.9V430.166L0,565.533Z" transform="translate(0 302.872)" fill="rgba(255,242,242,0.7)"/>
+      <path id="Right_Band_2" data-name="Right Band 2" d="M0,88.7,706.734,0V73.907L0,162.6Z" transform="translate(956.169 659.681)" fill="#fd7201"/>
+      <path id="Left_Band_1" data-name="Left Band 1" d="M0,59.242,565.569-8.11V65.8L0,133.149Z" transform="translate(0 802.532)" fill="#fd7201"/>
+    </g>
+  </g>
+</svg>
