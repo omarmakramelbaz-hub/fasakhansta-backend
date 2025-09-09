@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="216.393" height="71.434" viewBox="0 0 216.393 71.434">
+  <defs>
+    <clipPath id="clip-path">
+      <path id="Path_1" data-name="Path 1" d="M1066.84,0h22.434V22.434h-11.045V11.046H1066.84Z" transform="translate(-1066.84)" fill="none"/>
+    </clipPath>
+    <clipPath id="clip-path-2">
+      <path id="Path_2" data-name="Path 2" d="M700,405.317a11.213,11.213,0,1,1,0-15.857,11.213,11.213,0,0,1,0,15.857" transform="translate(-680.855 -386.175)" fill="none"/>
+    </clipPath>
+    <clipPath id="clip-path-3">
+      <path id="Path_3" data-name="Path 3" d="M337.379,42.7a18.543,18.543,0,1,1-13.112-31.656V0a29.589,29.589,0,0,0-20.922,50.512l20.922,20.922,20.922-20.922a29.5,29.5,0,0,0,8.666-20.922H342.81A18.452,18.452,0,0,1,337.378,42.7" transform="translate(-294.678)" fill="none"/>
+    </clipPath>
+  </defs>
+  <g id="Layer_1" data-name="Layer 1" transform="translate(-328.677 -0.435)">
+    <g id="Group_5" data-name="Group 5" transform="translate(328.678)">
+      <g id="Group_4" data-name="Group 4" transform="translate(0 0.434)">
+        <g id="Group_1" data-name="Group 1" transform="translate(36.744)" clip-path="url(#clip-path)">
+          <rect id="Rectangle_1" data-name="Rectangle 1" width="22.434" height="22.434" fill="#fff"/>
+        </g>
+        <g id="Group_2" data-name="Group 2" transform="translate(18.377 18.376)" clip-path="url(#clip-path-2)">
+          <rect id="Rectangle_2" data-name="Rectangle 2" width="24.616" height="24.616" transform="translate(-1.095 -1.095)" fill="#fff"/>
+        </g>
+        <g id="Group_3" data-name="Group 3" clip-path="url(#clip-path-3)">
+          <rect id="Rectangle_3" data-name="Rectangle 3" width="62.067" height="71.434" transform="translate(-2.889)" fill="#fff"/>
+        </g>
+      </g>
+      <text id="Valet_Parking" data-name="Valet Parking" transform="translate(84.393 42.434)" fill="#fff" font-size="23" font-family="BahijTheSansArabic-Bold, Bahij TheSansArabic" font-weight="700"><tspan x="0" y="0">Valet Parking</tspan></text>
+    </g>
+  </g>
+</svg>
