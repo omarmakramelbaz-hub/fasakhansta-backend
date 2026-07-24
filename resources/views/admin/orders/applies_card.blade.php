@@ -157,76 +157,12 @@
         <section class="content">
             <div class="container-fluid">
                 <div class="">
-                    <div class="all_orders"> 
-                         
-                        @if($orders->count()>0)
-                        <div class="row">
-                                <div class="col-lg-4 col-md-4  col-sm-12">
-                                    <div class="card h-100 py-3 pending">
-                                        <h2 class="fs-6 fw-bold px-3 py-2">
-                                            <a href="{{url('admin/applies-orders?q=pending')}}">
-                                             @lang('main.pending orders')
-                                            </a>
-                                        </h2>
-                                        <div class="card-status px-3" id="new_orders">
-                                            @foreach($orders->whereIn('status',['pending','another_delegate']) as $order)
-                                                @include('admin.orders.order_card',['order'=>$order])
-                                            @endforeach  
-                                        </div>
-                                    </div>
-                                 </div>
-                                <div class="col-lg-4 col-md-4  col-sm-12">
-                                    <div class="card h-100 py-3 accepted">
-                                        <h2 class="fs-6 fw-bold px-3 py-2">
-                                            <a href="{{url('admin/applies-orders?q=accepted')}}">
-                                              @lang('main.currently orders')
-                                            </a>
-                                        </h2>
-                                        <div class="card-status px-3">
-                                            @foreach($orders->whereIn('status',['accepted','shipped','new_order']) as $order)
-                                                @include('admin.orders.order_card',['order'=>$order])
-                                            @endforeach  
-                                        </div>
-                                    </div>
-                                 </div>
-                                <div class="col-lg-4 col-md-4  col-sm-12">
-                                    <div class="card h-100 py-3 completed">
-                                        <h2 class="fs-6 fw-bold px-3 py-2">
-                                            <a href="{{url('admin/applies-orders?q=completed')}}">
-                                             @lang('main.last orders')
-                                            </a>
-                                        </h2>
-                                        <div class="card-status px-3">
-                                           @foreach($orders->whereIn('status',['completed','cancelled','declined']) as $order)
-                                                @include('admin.orders.order_card',['order'=>$order])
-                                           @endforeach
-                                        </div>
-                                    </div>
-                                 </div>
-                                <style>
-                                    .card-status{
-                                        max-height: 66vh;
-                                        overflow-y: auto;
-                                    }
-                                    .pending .card-header{
-                                        background: var(--main-light) !important;
-                                    }
-                                    .accepted .card-header{
-                                        background: #ffb172 !important;
-                                    }
-                                    .completed .card-header{
-                                        background: #fffaf7 !important;
-                                        color: var(--main-light) !important;
-                                    }
-                                </style>     
-                            </div>
-                            
-                            
-                        @else
-                            <div class="card">
-                                <h3>@lang('main.empty data')</h3>
-                            </div>
-                        @endif
+                    <div id="loading" class="loading">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="all_orders" id="all_orders"> 
                     </div>
                     
                 </div>
@@ -387,6 +323,9 @@
 
 @endif
 <script>
+    $(document).ready(function() {
+        reloadOrderSections();
+    });
 $(document).on('click',".all_orders .modal .btn-close",function(e){
             e.preventDefault(); // Prevent any default behavior
     e.stopPropagation(); // Stop the event from propagating further
@@ -394,17 +333,130 @@ $(document).on('click',".all_orders .modal .btn-close",function(e){
     // Hide the modal
     $(this).closest(".modal").modal('hide');
     })
+    // function submitAndPrint(id) {
+    //     // const form = document.getElementById('delivey_type');
+
+    //     const form = $("#delivey_type"+id).closest('form');
+    //     // إرسال الفورم
+    //     form.submit();
+
+    //     // الانتظار لفترة بسيطة ثم تنفيذ الطباعة
+    //     setTimeout(() => {
+    //         printInvoice(id);
+    //     }, 1000); // انتظر ثانية واحدة (يمكن تعديلها حسب سرعة التحميل)
+    // }
+    function printInvoice(id){
+        printInvoice(id);
+        $('#product-details').modal('hide');
+    }
+
+    function changeOrderStatus(e){
+        e.preventDefault();
+
+        const button = e.target;
+        const form = $(button).closest('form');
+        
+        const formData = form.serialize();
+
+        $.ajax({
+            url: form.attr('action'),
+            type: form.attr('method'),
+            data: formData,
+            dataType: 'json',  // Explicitly expect JSON response
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',  // Indicate AJAX request
+                'Accept': 'application/json'           // Request JSON response
+            },
+            success: function(response) {
+                // Handle success response
+                if (response.status == 'Success') {
+                    // Show success message if needed
+                    toastr.success(response.message || 'تم الحفظ بنجاح');
+                    reloadOrderSections();
+                    $("#product-details").modal('hide');
+                } else {
+                    // Handle error from server
+                    toastr.error(response.message || 'حدث خطأ ما');
+                }
+            },
+            error: function(xhr, status, error) {
+                // Handle AJAX error
+                toastr.error('حدث خطأ في الاتصال بالخادم');
+            },
+            complete: function() {
+                $("#product-details").modal('hide');
+                // Hide loading indicator
+                // $('#loading').hide();
+            }
+        });
+    }
     function submitAndPrint(id) {
-        // const form = document.getElementById('delivey_type');
+        const form = $("#delivey_type" + id).closest('form');
+        const formData = form.serialize(); // Serialize form data
+        
+        // Show loading indicator if needed
+        // $('#loading').show();
+        
+        $.ajax({
+            url: form.attr('action'),
+            type: form.attr('method'),
+            data: formData,
+            dataType: 'json',  // Explicitly expect JSON response
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',  // Indicate AJAX request
+                'Accept': 'application/json'           // Request JSON response
+            },
+            success: function(response) {
+                // Handle success response
+                if (response.status == 'Success') {
+                    // Show success message if needed
+                    toastr.success(response.message || 'تم الحفظ بنجاح');
+                    reloadOrderSections();
+                    $("#product-details").modal('hide');
+                    // Print after successful submission
+                    printInvoice(id);
+                } else {
+                    // Handle error from server
+                    toastr.error(response.message || 'حدث خطأ ما');
+                }
+            },
+            error: function(xhr, status, error) {
+                // Handle AJAX error
+                toastr.error('حدث خطأ في الاتصال بالخادم');
+            },
+            complete: function() {
+                $("#product-details").modal('hide');
+                // Hide loading indicator
+                // $('#loading').hide();
+            }
+        });
+    }
 
-        const form = $("#delivey_type"+id).closest('form');
-        // إرسال الفورم
-        form.submit();
+    function reloadOrderSections() {
+        $('#all_orders').empty();
+        
+        // Show loading indicator
+        $('#loading').show();
+        
 
-        // الانتظار لفترة بسيطة ثم تنفيذ الطباعة
-        setTimeout(() => {
-            printInvoice(id);
-        }, 1000); // انتظر ثانية واحدة (يمكن تعديلها حسب سرعة التحميل)
+        $.ajax({
+            url: "{{url('admin/getOrders')}}",
+            type: "GET",
+            dataType: 'json',  // Explicitly expect JSON response
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',  // Indicate AJAX request
+                'Accept': 'application/json'           // Request JSON response
+            },
+            success: function (data) {
+                $('#all_orders').html(data.view);
+            },
+            error: function (xhr, status, error) {
+                toastr.error('حدث خطأ في الاتصال بالخادم');
+            },
+            complete: function() {
+                $('#loading').hide();
+            }
+        });
     }
     function printInvoice(id) {
         // فتح نافذة صغيرة
@@ -429,7 +481,6 @@ function checkToasts() {
         var orderTime = $(this).data('order-time'); 
         var orderStatus = $(this).data('status');
         var currentTime = new Date().getTime();
-        console.log( parseFloat((currentTime - orderTime) / 30 / 1000 .toFixed(2)))
         if (currentTime - orderTime >= threeMinutes) {
             $('.card-footer[data-ord-id="'+orderId+'"] div.wait').html(`
                 <button type="submit" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal${orderId}">@lang('main.choose delivery type')</button>

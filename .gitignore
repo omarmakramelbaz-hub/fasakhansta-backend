@@ -12,5 +12,20 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
-composer.lock
+# Backups
+*.zip
+*.bak
+__app/
+__config/
+__database/
+__resources/
+__routes/
 
+# Logs
+error_log
+*.log
+
+# Firebase
+public/firebase_credentials.json
+public/firebase_credentials_old.json
+test.fasakhaninja.com/dev/

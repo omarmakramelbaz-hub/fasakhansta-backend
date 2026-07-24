@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use App\Events\OrderStatusUpdated;
+use Illuminate\Support\Facades\Mail;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +15,20 @@ use Illuminate\Http\Request;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+Route::get('test-test', function () {
+    Mail::send('emails.send_pending_vendor_acceptance_email', ['user' => 'fvxcvx', 'email' => 'abderhman.menem@gmail.com', 'mobile' => ['0103498598'], 'password' => '123456', 'account_type' => 'vendor'], function ($message) {
+        $message->to('abderhman.menem@gmail.com');
+        $message->subject('Send Notification');
+    });
+    // $order = App\Models\Order::where('id', 6106)->first();
+    // $resturant_owner = User::whereHas('base_resturant', function ($q) use ($order) {
+    //     $q->where('id', 82);
+    // })->first();
+    // Notification::send($resturant_owner, new \App\Notifications\NotifyResturantOrderCreatedNotification($order));
+    // event(new OrderStatusUpdated($order));
+    // return 1;
+});
 
 Route::get('/clear-cache', function() {
     $exitCode0 = Artisan::call('route:clear');

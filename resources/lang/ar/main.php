@@ -7,6 +7,7 @@ return [
     'enter password' =>'ادخل كلمة المرور',
     'enter email' => 'ادخل بريدك الالكترونى',
     'login' => 'تسجيل دخول', 
+    "show more"=>"الأطلاع على المزيد ...",
     'there is an error in email or password' => 'يوجد خطأ فى  البريد الالكترونى او كلمة المرور',
     'check account verification' => 'راجع البريد الالكترونى الخاص بك',
     'code successed' => 'تم ادخال الرمز بنجاح',

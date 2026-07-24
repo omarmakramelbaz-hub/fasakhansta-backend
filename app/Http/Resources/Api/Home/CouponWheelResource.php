@@ -15,30 +15,66 @@ class CouponWheelResource extends JsonResource
         $longitude = $request->input('lng');
 
         return [
-            'id'                => $this->id,
-            'name'              => $this->name,
-            'price'             => $this->price,
-            'start_date'        => $this->start_date,
-            'end_date'          => $this->end_date,
-            'status'            => $this->status,
-            'image'             => $this->getFirstMediaUrl('coupon_wheel_image', 'thumb'),
-            'resturants'        => CouponWheelResturant::collection(
-                $this->resturants()->whereHas('resturant', function ($query) use ($latitude, $longitude) {
-                    if (!empty($latitude) && !empty($longitude)) {
-                        $city_name = getCityName($latitude, $longitude);
-                        $area = Area::where('title_ar', 'LIKE', '%' . $city_name . '%')
-                            ->orWhere('title_en', 'LIKE', '%' . $city_name . '%')
-                            ->first();
+            'id' => $this->id,
+            'name' => $this->name,
+            'price' => $this->price,
+            'start_date' => $this->start_date,
+            'end_date' => $this->end_date,
+            'status' => $this->status,
+            'image' => $this->getFirstMediaUrl('coupon_wheel_image', 'thumb'),
+            'resturants' => CouponWheelResturant::collection(
+                $this->resturants()->with('resturant.resturant_areas')->get()->filter(function ($item) use ($latitude, $longitude) {
+                    if (empty($latitude) || empty($longitude)) {
+                        return true;
+                    }
 
-                        if ($area) {
-                            $query->whereHas('resturant_areas', function ($subQuery) use ($area) {
-                                    $subQuery->where('area_id', $area->id);
-                                });
+                    $resturant = $item->resturant;
+                    if (!$resturant) {
+                        return false;
+                    }
+
+                    foreach ($resturant->resturant_areas as $restaurantArea) {
+                        if ($restaurantArea->lat && $restaurantArea->lng && $restaurantArea->expected_delivery) {
+                            $distance = $this->calculateDistance(
+                                $latitude,
+                                $longitude,
+                                $restaurantArea->lat,
+                                $restaurantArea->lng
+                            );
+
+                            if ($distance <= $restaurantArea->expected_delivery) {
+                                return true;
+                            }
                         }
                     }
-                })->get()
+
+                    return false;
+                })
             ),
-            'created_at'        => $this->created_at,
+            'created_at' => $this->created_at,
         ];
+    }
+
+    private function calculateDistance($lat1, $lng1, $lat2, $lng2)
+    {
+        $earthRadius = 6371; // Earth's radius in kilometers
+
+        $lat1 = deg2rad($lat1);
+        $lng1 = deg2rad($lng1);
+        $lat2 = deg2rad($lat2);
+        $lng2 = deg2rad($lng2);
+
+        $latDiff = $lat2 - $lat1;
+        $lngDiff = $lng2 - $lng1;
+
+        $a = sin($latDiff / 2) * sin($latDiff / 2) +
+            cos($lat1) * cos($lat2) *
+            sin($lngDiff / 2) * sin($lngDiff / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        $distance = $earthRadius * $c;
+
+        return $distance;
     }
 }

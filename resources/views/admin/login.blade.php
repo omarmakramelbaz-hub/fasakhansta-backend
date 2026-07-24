@@ -129,6 +129,7 @@
         }
         .login-logo, .register-logo {
             padding: 0;
+            padding-top: 15%;
         }
         .login-box-msg {
             color: #fd7201;

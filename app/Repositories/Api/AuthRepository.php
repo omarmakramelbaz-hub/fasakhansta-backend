@@ -20,7 +20,6 @@ class AuthRepository implements AuthRepositoryInterface
 
     public function login(array $Details) 
     {
-        
           if (substr($Details['mobile'], 0, 1) === '0') {
         $Details['mobile'] = substr($Details['mobile'], 1);
     }
@@ -61,8 +60,11 @@ class AuthRepository implements AuthRepositoryInterface
                      return $user;
 
         }elseif ($user->status == 'accepted') {
-                        $user->fcm_id = request('fcm_id');
-            $user->save();
+            if(request('fcm_id')){
+                $user->update(['fcm_id' => (string)request('fcm_id')]);
+                $user->newOrExistingToken(request('fcm_id'));
+                
+            }
 
                     return $user;
 

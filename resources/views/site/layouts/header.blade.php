@@ -8,6 +8,9 @@
   <title>@yield('title') </title> 
   <link rel="shortcut icon" type="image/x-icon" href="{{url('/storage/'.app(App\Models\GeneralSettings::class)->logo)}}" sizes="65x65" />
     @include('site.includes.meta-section')
+    
+    <meta name="google-site-verification" content="MpqNC9NKMbizfEMLmw0CUKu82jiA-VvfyNJpUZAQyE0" />
+
   <meta name="csrf-token" content="{{ csrf_token() }}" />
   <!-- font awesome link  -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"

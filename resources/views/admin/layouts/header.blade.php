@@ -158,13 +158,19 @@
 
     <script >
 const firebaseConfig = {
-     apiKey: "AIzaSyB0KKM-Dm-7wOk-S3zLkBAjMn8Z4JL9snA",
-  authDomain: "faskhaninja.firebaseapp.com",
-  projectId: "faskhaninja",
-  storageBucket: "faskhaninja.appspot.com",
-  messagingSenderId: "547950781924",
-  appId: "1:547950781924:web:7511c8e2cc79e2cc28d3f1",
-  measurementId: "G-2BN39RQZDR"
+     apiKey: "AIzaSyCXd5OLKdIutyA4qsidhBwQCRJt3SsFHEE",
+
+  authDomain: "fasakhaninjatest.firebaseapp.com",
+
+  projectId: "fasakhaninjatest",
+
+  storageBucket: "fasakhaninjatest.firebasestorage.app",
+
+  messagingSenderId: "224648167390",
+
+  appId: "1:224648167390:web:13c997f338325b4b56274f",
+
+  measurementId: "G-ECZ1880953"
 };
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);

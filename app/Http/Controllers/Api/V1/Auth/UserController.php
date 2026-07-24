@@ -159,7 +159,10 @@ public function resend_code(Request $request){
    public function userLogout() {
       $id= Auth::guard('api')->user()->id;
     // dd($id);
+        $user=User::where('id', $id)->first();
+        $user->tokens()->where('token',auth('api')->user()->fcm_id)->delete();
       $up_key=User::where('id', $id)->update(['fcm_id'=> null]);
+
       $data = Auth::guard('api')->logout();
       
       return $this->successResponse($data,trans('api.logout successfully'));

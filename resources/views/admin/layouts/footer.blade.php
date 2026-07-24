@@ -1,4 +1,19 @@
+<!--<script src="https://js.pusher.com/7.2/pusher.min.js"></script>-->
 
+<script>
+    // Pusher.logToConsole = true;
+
+    // var pusher = new Pusher("0f818db2b7622218a22a", {
+    //     cluster: "mt1",
+    //     forceTLS: true
+    // });
+
+    // var channel = pusher.subscribe("order.1503"); 
+    // channel.bind("status-updated", function(data) {
+    //     console.log("Received:", data);
+    //     alert("Status: " + data.order.status);
+    // });
+</script>
 
 <footer class="main-footer">
   <!--<button id="enable-sound">Enable Sound</button>-->
@@ -189,7 +204,7 @@ $(document).ready(function() {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
 
 <script>
-
+console.log('fgdfgdfdbfgdfgfgdfgdfgdfgdgdf',firebaseConfig)
 // // Ensure Service Worker is supported
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('{{url("firebase-messaging-sw.js")}}')
@@ -213,8 +228,18 @@ if ('serviceWorker' in navigator) {
 
 // // Listen for messages from the service worker
 navigator.serviceWorker.addEventListener('message', (event) => {
-                const clickAction = event.data.click_action;
-            console.log(document.visibilityState);
+    // console.log('ffdfdfdsfdsfsdf' , event.data.firebaseMessaging.payload.data.account_type)
+                // const clickAction = event.data.firebaseMessaging.payload.data.click_action;
+            // console.log(clickAction);
+            // if (event.data.type === 'PLAY_SOUND') {
+                const audio = new Audio(`{{url('/')}}/sounds/mixkit-correct-answer-reward-952.wav`); // your file in public/sounds/
+                audio.loop = true;
+                audio.play().catch(err => console.warn('Audio play failed:', err));
+    if ($('#all_orders').length) {
+        reloadOrderSections();
+    } 
+
+            // }
           // Check if the page is in the background
             // if (document.visibilityState === 'hidden' && clickAction) {
             //     const newWindow = window.open(clickAction, '_blank');
@@ -288,13 +313,17 @@ function requestNotificationPermission() {
         }
     });
 }
-
+let audio;
 $(document).ready(function(){
     getToken();
+    if(audio){
+                audio.pause(); // Stops the audio
+                audio.currentTime = 0; // Resets the audio to the start
+            }
 })
 // Retrieve token and handle FCM messages
 function getToken() {
-    messaging.getToken({ vapidKey: 'BOsvF-qrgKBbCcc9XPWKeiRq6wUjwP55dU2JqoefuLBICbofvTdkltQceX6y6ASyteZ4tLC6tHdnLOx6NGF1oZA  ' }).then((currentToken) => {
+    messaging.getToken({ vapidKey: 'BCQ4Essgps5zSojP4_gZVOYxiujNYCClxiFZ9wjI7qAnXMg1JWYcNcTi6h3OIP5DWgNZVz69gjT-datbauWD7PU' }).then((currentToken) => {
         if (currentToken) {
             console.log('FCM Token:', currentToken);
             // Send the token to your server
@@ -311,33 +340,39 @@ function getToken() {
 
 
 // Handle foreground messages
-messaging.onMessage((payload) => {
-    console.log('Message received in foreground:', payload);
-  // Only play sound once per push notification
-    // const audio = new Audio('{{url('/')}}/sounds/mixkit-correct-answer-reward-952.wav');
-    // audio.play();
-const title = payload.notification.title || 'Default Title'; // Fallback title
-    const body = payload.notification.body;
-    const icon = payload.data.icon || '{{url("/storage/".app(App\Models\GeneralSettings::class)->logo)}}';
-    const clickAction = payload.data.click_action || '{{url('/')}}';
+// messaging.onMessage((payload) => {
+//     console.log('Message received in foreground:', payload);
+// //   const audio = new Audio('{{url('/')}}/sounds/mixkit-correct-answer-reward-952.wav');
+// //     audio.loop = true;
+// //     audio.play();
+// const title = payload.notification.title || 'Default Title'; // Fallback title
+//     const body = payload.notification.body;
+//     const icon = payload.data.icon || '{{url("/storage/".app(App\Models\GeneralSettings::class)->logo)}}';
+//     const clickAction = payload.data.click_action || '{{url('/')}}';
 
-    const options = {
-        body: body,
-        icon: icon,
-        vibrate: [1000, 200, 1000, 200, 1000], // Long vibration pattern
-          silent: false,
-        data: {
-            click_action: clickAction // Store click action in data
-        }
-    };
-    // Show notification
-    // return self.registration.showNotification(title, options);
+//     const options = {
+//         body: body,
+//         icon: icon,
+//         vibrate: [1000, 200, 1000, 200, 1000], // Long vibration pattern
+//           silent: false,
+//         data: {
+//             click_action: clickAction // Store click action in data
+//         }
+//     };
+//     // Show notification
+//     // return self.registration.showNotification(title, options);
 
-    // Display the notification if the user has granted permission
-    if (Notification.permission === 'granted') {
-        new Notification(title, options);
-    }
-});
+//     // Display the notification if the user has granted permission
+//     if (Notification.permission === 'granted') {
+//         new Notification(title, options);
+//         // Notification.addEventListener('click', () => {
+//         //     if(audio){
+//         //         audio.pause(); // Stops the audio
+//         //         audio.currentTime = 0; // Resets the audio to the start
+//         //     }
+//         // });
+//     }
+// });
 
 
 

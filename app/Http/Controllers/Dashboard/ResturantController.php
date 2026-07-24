@@ -101,7 +101,8 @@ class ResturantController extends Controller
      */
     public function update(StoreResturantRequest $request,Resturant $resturant)
     {
-        $resturantDetails = $request->except('_token','_method');
+
+    $resturantDetails = $request->except('_token','_method');
         $this->resturantRepository->updateResturant($resturant->id, $resturantDetails);
         return redirect()->back()->with('success',trans('messages.UpdateSuccessfully'));
     }

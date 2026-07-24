@@ -68,7 +68,7 @@ class ResturantController extends Controller {
                 'resturant_id'      => $resturant->id,
                 'expected_delivery' => 0,
                 'area_id'           => ($area)? $area->id: null,
-	 	        'type'              => 'kilo',
+                'type'              => 'kilo',
             ]);
         }
         $ResturantData = ResturantResource::make($resturant->fresh());

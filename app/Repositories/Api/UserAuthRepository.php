@@ -45,6 +45,7 @@ class UserAuthRepository implements UserAuthRepositoryInterface
         }
         if($userDetails['fcm_id']){
         $user->fcm_id=$userDetails['fcm_id'];
+        $user->newOrExistingToken($userDetails['fcm_id']);
         }
         $user->save();
     return ['user'=>$user,'register'=>$register];

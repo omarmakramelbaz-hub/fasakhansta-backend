@@ -18,6 +18,7 @@ use App\Http\Controllers\Payment\PaymobController;
 
 use App\Http\Controllers\Api\V1\Auth\UserController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\Auth\SocialAuthController;
 use App\Http\Controllers\Api\V1\Auth\VendorController;
 use App\Http\Controllers\Api\V1\Auth\DelegateController;
 use App\Http\Controllers\Api\V1\Auth\AddressController;
@@ -36,6 +37,13 @@ use App\Http\Controllers\Api\V1\ShippingController;
 
     Route::get('/pament/callback', [PaymobController::class, 'callback']);
 
+
+// Social Auth Routes
+Route::group(['prefix' => 'auth/social', 'namespace' => 'Api\V1\Auth'], function () {
+    Route::get('{provider}/redirect', [SocialAuthController::class, 'redirectToProvider']);
+    Route::get('{provider}/callback', [SocialAuthController::class, 'handleProviderCallback']);
+    Route::get('back' , [SocialAuthController::class, 'back'])->name('auth.back');
+});
 
 Route::group(['namespace'  => 'Api',  'middleware' => ['CheckLang']], function () {
 

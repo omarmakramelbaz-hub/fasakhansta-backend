@@ -47,7 +47,7 @@ class Resturant extends Model implements HasMedia
        return $this->hasMany(ResturantProduct::class,'resturant_id')->where('highest_rated','yes')->orderBy('category_id','ASC');
     }
     public function resturant_areas() {
-       return $this->hasMany(ResturantArea::class,'resturant_id')->has('area');
+       return $this->hasMany(ResturantArea::class,'resturant_id');
     }
     
     public function owner() {
@@ -110,7 +110,7 @@ class Resturant extends Model implements HasMedia
     }
      public function calcualte_star_rate(){
         $rate=$this->reviews()->avg('rate');
-        $this->update(['avg_rate'=> number_format($rate, 2)]);
+        $this->update(['avg_rate' => round($rate, 2)]);
         return $this->avg_rate;
     }
      public function orders(){

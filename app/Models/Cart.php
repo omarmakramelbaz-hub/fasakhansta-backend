@@ -34,4 +34,8 @@ class Cart extends Model
        return $this->belongsTo(\App\Models\ProductFeature::class,'product_feature');
     }
 
+    public function scopeIsNotOrder($query){
+        return $query->where('user_id',auth('api')->user()->id)->where('is_order',false);
+    }
+
 }

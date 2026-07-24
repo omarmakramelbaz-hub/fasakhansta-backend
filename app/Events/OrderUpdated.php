@@ -25,7 +25,7 @@ class OrderUpdated implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new PrivateChannel('user.'.$this->order->resturant?->user_id);
+        return new PrivateChannel('user.'.$this->senderId);
 
     }
 

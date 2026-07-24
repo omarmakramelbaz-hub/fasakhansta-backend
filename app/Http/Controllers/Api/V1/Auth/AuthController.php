@@ -129,6 +129,7 @@ class AuthController extends Controller {
     public function logout() {
       $id= Auth::guard('api')->user()->id;
       $up_key=User::where('id', $id)->first();
+    //   $up_key->tokens()->where('token',auth('api')->user()->fcm_id)->delete();
       $up_key->update(['fcm_id'=> null]);      
       $data = Auth::guard('api')->logout();
       
@@ -197,9 +198,91 @@ class AuthController extends Controller {
            if ($request->wantsJson() || $request->is('api/*')) {
 
                 return $this->errorResponse(trans('api.api.error in password'));
-                         }else{
-                             return back()->with('error',trans('api.api.error in password'));
-                         }
+           }else{
+                return back()->with('error',trans('api.api.error in password'));
+           }
+    }
+
+    /**
+     * Redirect the user to the provider authentication page.
+     *
+     * @param string $provider (google, facebook, etc.)
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function redirectToProvider($provider)
+    {
+        $validated = $this->validateProvider($provider);
+        if (!is_null($validated)) {
+            return $validated;
+        }
+
+        return response()->json([
+            'url' => Socialite::driver($provider)->stateless()->redirect()->getTargetUrl(),
+        ]);
+    }
+
+    /**
+     * Obtain the user information from the provider.
+     *
+     * @param string $provider
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function handleProviderCallback($provider)
+    {
+        $validated = $this->validateProvider($provider);
+        if (!is_null($validated)) {
+            return $validated;
+        }
+
+        try {
+            $providerUser = Socialite::driver($provider)->stateless()->user();
+        } catch (\Exception $e) {
+            return $this->errorResponse(trans('auth.social_login_failed'), 400);
+        }
+
+        // Check if we have a user with this email
+        $user = User::where('email', $providerUser->getEmail())->first();
+
+        // If user doesn't exist, create a new one
+        if (!$user) {
+            $user = User::create([
+                'name' => $providerUser->getName() ?? $providerUser->getNickname(),
+                'email' => $providerUser->getEmail(),
+                'password' => bcrypt(Str::random(16)), // Random password
+                'email_verified_at' => now(),
+                'account_type' => 'user', // Default account type
+            ]);
+        }
+
+        // Create or update social account
+        $user->socialAccounts()->updateOrCreate(
+            [
+                'provider' => $provider,
+                'provider_user_id' => $providerUser->getId(),
+            ],
+            ['provider' => $provider]
+        );
+
+        // Generate token
+        $token = JWTAuth::fromUser($user);
+        $userData = UserResource::make($user)->getToken($token);
+
+        return $this->successResponse($userData, trans('api.signed'));
+    }
+
+    /**
+     * Validate the provider.
+     *
+     * @param $provider
+     * @return \Illuminate\Http\JsonResponse|null
+     */
+    protected function validateProvider($provider)
+    {
+        if (!in_array($provider, ['facebook', 'google'])) {
+            return $this->errorResponse(trans('auth.unsupported_provider'), 422);
+        }
+        
+        return null;
     }
     
   

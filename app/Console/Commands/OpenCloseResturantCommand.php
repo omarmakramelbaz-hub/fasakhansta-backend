@@ -43,36 +43,105 @@ class OpenCloseResturantCommand extends Command
     {
          \Log::info("Cron is open_close_resturant!");
 
-        $currentTime = now()->format('H:i'); 
+       $currentTime = now()->format('H:i:s');
 
-        $open_resturants = Resturant::where('open_at', $currentTime)->get();
-        foreach($open_resturants as $value){
-             $orders = Order::where('resturant_id', $value->id)->whereIn('order_type',['schedule','another_zone'])->whereDate('schedule_date', now()->toDateString())
+       $openedCount = 0;
+       $closedCount = 0;
+
+     $restaurants = Resturant::all();
+
+foreach ($restaurants as $restaurant) {
+
+   $open = $restaurant->open_at;
+$close = $restaurant->close_at;
+
+$shouldBeOpen = false;
+
+// إذا كان الغلق عند منتصف الليل، اعتبره نهاية اليوم
+if ($close == '00:00:00') {
+    $close = '23:59:59';
+}
+
+// نفس اليوم
+if ($open < $close) {
+
+    if ($currentTime >= $open && $currentTime < $close) {
+        $shouldBeOpen = true;
+    }
+
+}
+// يمتد لليوم التالي
+else {
+
+    if ($currentTime >= $open || $currentTime < $close) {
+        $shouldBeOpen = true;
+    }
+
+}
+
+    if ($shouldBeOpen) {
+
+        if ($restaurant->status != 'opened') {
+
+            $orders = Order::where('resturant_id', $restaurant->id)
+                ->whereIn('order_type', ['schedule', 'another_zone'])
+                ->whereDate('schedule_date', now()->toDateString())
                 ->where('status', 'pending')
                 ->get();
-                 \Log::info(now()->toDateString());
 
-                foreach($orders as $order){
-                 if($order->resturant_id){
+            foreach ($orders as $order) {
+
+                try {
+
                     $to_email = $order->resturant?->user?->email;
-                 }
-                 
-                        //   \Log::info($to_email);
 
-                    if($to_email){
-                    $mail=Mail::send('emails.reminder_today_orders_email', ['cart' => $order], function($message) use ( $to_email) {
-                         $message->to($to_email);
-                         $message->subject('reminder schedule order today');
-                    });
+                    if (!empty($to_email)) {
+
+                        Mail::send(
+                            'emails.reminder_today_orders_email',
+                            ['cart' => $order],
+                            function ($message) use ($to_email) {
+                                $message->to($to_email);
+                                $message->subject('reminder schedule order today');
+                            }
+                        );
+
                     }
-                    
-                }
-                $value->update(['status' => 'opened']);
-        }
-        // $open_resturants->update(['status' => 'opened']);
-            
-        $closed_resturants = Resturant::where('close_at',$currentTime)->update(['status' => 'closed']);
 
-            
+                } catch (\Throwable $e) {
+
+                    \Log::error($e->getMessage());
+
+                }
+
+            }
+
+            $restaurant->update([
+                'status' => 'opened'
+            ]);
+
+            $openedCount++;
+
+        }
+
+    } else {
+
+        if ($restaurant->status != 'closed') {
+
+            $restaurant->update([
+                'status' => 'closed'
+            ]);
+
+            $closedCount++;
+
+        }
+
     }
+
+}
+
+\Log::info("OpenCloseResturant Finished - Opened: {$openedCount}, Closed: {$closedCount}");
+
+}
+
 }
