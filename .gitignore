@@ -15,3 +15,5 @@ yarn-error.log
 composer.lock
 storage/app/firebase.json
 public/firebase_credentials.json
+error_log
+*.log
