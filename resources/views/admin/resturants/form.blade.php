@@ -189,8 +189,9 @@
         <div class="row-main create">
             <div class="row py-3 border-bottom position-relative">
                 <div class="form-group col-sm-6">
-                    <label for="area_id"> @lang('main.choose govern')</label><span class="text-danger">*</span>
+                    <label for="area_id"> @lang('main.choose govern')</label>
                     <select class="form-select areas" name="area_id[]">
+                        <option value="">اختياري</option>
                         @foreach(\App\Models\Area::whereNull('cairo_id')->whereNotNull('parent_id')->get() as $area)
                         <option value="{{$area->id}}">{{$area->title}}</option>
                         @endforeach
@@ -198,9 +199,14 @@
                 </div>
                 @php $key = 0; @endphp
                 <div class="form-group col-sm-6">
-                    <label for="expected_delivery" class="expected_delivery">{{$key==0?__('main.expected_delivery_km'):__('main.expected_delivery')}}</label><span class="text-danger">*</span>
+                    <label for="expected_delivery" class="expected_delivery">{{('main.expected_delivery_km')}}</label><span class="text-danger">*</span>
                     <input required type="text" name="expected_delivery[]"
                         class="form-control @error('expected_delivery') is-invalid @enderror" id="expected_delivery" placeholder="">
+                </div>
+                <div class="form-group col-sm-12">
+                    <input type="hidden" name="area_lat[]" class="area-lat">
+                    <input type="hidden" name="area_lng[]" class="area-lng">
+                    <div class="area-map-container" style="width:100%; height: 200px;"></div>
                 </div>
             </div>
             <div class="clone-row"></div>
@@ -213,8 +219,9 @@
     <template class="copydiv">
         <div class="row clone py-3 border-bottom position-relative">
             <div class="form-group col-sm-6">
-                <label for="area_id"> @lang('main.choose govern')</label><span class="text-danger">*</span>
+                <label for="area_id"> @lang('main.choose govern')</label>
                 <select class="form-select areas" name="area_id[]">
+                    <option value="">اختياري</option>
                     @foreach(\App\Models\Area::whereNotNull('parent_id')->get() as $area)
                     <option value="{{$area->id}}">{{$area->title}}</option>
                     @endforeach
@@ -223,10 +230,15 @@
             @php $key = 0; @endphp
             <div class="form-group col-sm-6">
                 <label for="expected_delivery" class="expected_delivery">
-                    {{$key==0?__('main.expected_delivery_km'):__('main.expected_delivery')}}
+                    {{__('main.expected_delivery_km')}}
                 </label><span class="text-danger">*</span>
                 <input required type="text" name="expected_delivery[]"
                     class="form-control @error('expected_delivery') is-invalid @enderror" id="expected_delivery" placeholder="">
+            </div>
+            <div class="form-group col-sm-12">
+                <input type="hidden" name="area_lat[]" class="area-lat">
+                <input type="hidden" name="area_lng[]" class="area-lng">
+                <div class="area-map-container" style="width:100%; height: 200px;"></div>
             </div>
             <span class="btn btn-danger pull-right btn-del-select py-2">
                 <i class="fas fa-trash-alt"></i>
@@ -241,17 +253,23 @@
             @foreach($resturant->resturant_areas as $key => $val)
             <div class="row py-3 border-bottom position-relative">
                 <div class="form-group col-sm-6">
-                    <label for="area_id"> @lang('main.choose govern')</label><span class="text-danger">*</span>
+                    <label for="area_id"> @lang('main.choose govern')</label>
                     <select class="form-select areas"  name="area_id[]">
-                        @foreach(\App\Models\Area::whereNotNull('parent_id')->where('parent_id',$val->area?->parent_id)->get() as $area)
+                        <option value="">اختياري</option>
+                        @foreach(\App\Models\Area::whereNotNull('parent_id')->get() as $area)
                         <option value="{{$area->id}}"  @if($val->area_id == $area->id) selected @endif>{{$area->title}}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="form-group col-sm-6">
-                    <label for="expected_delivery" class="expected_delivery">{{$key==0?__('main.expected_delivery_km'):__('main.expected_delivery')}} </label><span class="text-danger">*</span>
+                    <label for="expected_delivery" class="expected_delivery">{{__('main.expected_delivery_km')}} </label><span class="text-danger">*</span>
                     <input required type="text"  name="expected_delivery[]" value="{{($val->expected_delivery) }}"
                     class="form-control @error('expected_delivery') is-invalid @enderror" id="expected_delivery" placeholder="">
+                </div>
+                <div class="form-group col-sm-12">
+                    <input type="hidden" name="area_lat[]" class="area-lat" value="{{$val->lat}}">
+                    <input type="hidden" name="area_lng[]" class="area-lng" value="{{$val->lng}}">
+                    <div class="area-map-container" style="width:100%; height: 200px;"></div>
                 </div>
                 <span class="btn btn-danger pull-right btn-del-select py-2">
                     <i class="fas fa-trash-alt"></i>
@@ -330,6 +348,7 @@
             document.getElementById("lat").value = position.lat();
             document.getElementById("lng").value = position.lng();
         });
+        setupAreaMapsOnPageLoad();
     }
 
     // Function to search the map based on Latitude and Longitude entered
@@ -362,6 +381,70 @@
 
     // Add event listener to the Search button
     document.getElementById("searchBtn").addEventListener("click", searchLocation);
+
+    var areaMaps = [];
+    function initAreaMapForRow(rowElem) {
+        if (!window.google || !google.maps) return;
+        var container = rowElem.querySelector('.area-map-container');
+        if (!container || container.dataset.initialized) return;
+        container.dataset.initialized = '1';
+        var baseLat = parseFloat(document.getElementById('lat').value) || 24.701925;
+        var baseLng = parseFloat(document.getElementById('lng').value) || 46.675415;
+        var position = new google.maps.LatLng(baseLat, baseLng);
+        var m = new google.maps.Map(container, { zoom: 12, center: position, mapTypeId: google.maps.MapTypeId.terrain, streetViewControl: false });
+        var mk = new google.maps.Marker({ position: position, map: m });
+        var latInput = rowElem.querySelector('input.area-lat');
+        var lngInput = rowElem.querySelector('input.area-lng');
+        var distInput = rowElem.querySelector('input[name="expected_delivery[]"]');
+        if (latInput && lngInput && latInput.value && lngInput.value) {
+            var pos = new google.maps.LatLng(parseFloat(latInput.value), parseFloat(lngInput.value));
+            mk.setPosition(pos);
+            m.setCenter(pos);
+        } else {
+            if (latInput && lngInput) { latInput.value = baseLat; lngInput.value = baseLng; }
+        }
+        var initialRadius = 0;
+        if (distInput) {
+            var r = parseFloat(distInput.value);
+            if (!isNaN(r) && r > 0) initialRadius = r * 1000; // km -> m
+        }
+        var circ = new google.maps.Circle({
+            map: m,
+            center: mk.getPosition(),
+            radius: initialRadius,
+            fillColor: '#4285F4',
+            fillOpacity: 0.15,
+            strokeColor: '#4285F4',
+            strokeOpacity: 0.6,
+            strokeWeight: 1
+        });
+        google.maps.event.addListener(m, 'click', function(ev) {
+            mk.setPosition(ev.latLng);
+            if (latInput) latInput.value = ev.latLng.lat();
+            if (lngInput) lngInput.value = ev.latLng.lng();
+            circ.setCenter(ev.latLng);
+        });
+        if (distInput) {
+            distInput.addEventListener('input', function() {
+                var val = parseFloat(this.value);
+                circ.setRadius(!isNaN(val) && val > 0 ? val * 1000 : 0);
+            });
+        }
+        areaMaps.push({ map: m, marker: mk, circle: circ, row: rowElem });
+    }
+
+    function setupAreaMapsOnPageLoad() {
+        document.querySelectorAll('.area-map-container').forEach(function(container) {
+            var row = container.closest('.row');
+            if (row) { initAreaMapForRow(row); }
+        });
+    }
+
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.add-select')) {
+            setTimeout(setupAreaMapsOnPageLoad, 0);
+        }
+    });
 
 </script>
 

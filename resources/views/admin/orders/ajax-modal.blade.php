@@ -193,7 +193,7 @@
                         <input type="hidden" name="order_id" value="{{$product->id}}">
                         <input type="hidden" name="status" value="declined">
                         <input type="hidden" name="" value="{{request('q')}}">
-                        <button type="submit" class="btn btn-outline-danger rounded-pill">@lang('main.order-declined')</button>
+                        <button onclick="changeOrderStatus(event)" type="button" class="btn btn-outline-danger rounded-pill">@lang('main.order-declined')</button>
                       </form>
                       @endif
                       @if($product->accepted_notify=='no' && $product->status=='pending')
@@ -202,11 +202,11 @@
                         
                         <input type="hidden" name="order_id" value="{{$product->id}}">
                         <input type="hidden" name="" value="{{request('q')}}">
-                        <button type="submit" class="btn btn-outline-primary rounded-pill">@lang('main.accept order')</button>
+                        <button onclick="changeOrderStatus(event)" type="button" class="btn btn-outline-primary rounded-pill">@lang('main.accept order')</button>
                       </form>
                       @endif
                 @elseif($product->delegate_from_out == null && $product->status == 'pending' &&$product->schedule_date != null &&  $scheduleDate->toDateString() < now()->toDateString())
-                     <button class="btn btn-secondary rounded-pill" disabled>@lang('main.archived') </button>
+                     <button class="btn btn-secondary rouidnded-pill" disabled>@lang('main.archived') </button>
                 @else
                     @if($product->delegate_from_out == 'out_resturant' && ($product->status == 'pending' || $product->status == 'another_delegate'))
                     <div class="wait d-flex gap-2">
@@ -222,7 +222,7 @@
                                 <input type="hidden" name="" value="{{request('q')}}">
                                 <input type="hidden" name="type" value="in_resturant">
                            
-                                <button type="submit" class="btn btn-success rounded-pill" >@lang('main.order-inresturant') </button>
+                                <button onclick="changeOrderStatus(event)" type="button" class="btn btn-success rounded-pill" >@lang('main.order-inresturant') </button>
                             </form>
                     </div>
                     
@@ -252,7 +252,7 @@
                         <input type="hidden" name="order_id" value="{{$product->id}}">
                         <input type="hidden" name="status" value="declined">
                         <input type="hidden" name="" value="{{request('q')}}">
-                        <button type="submit" class="btn btn-outline-danger rounded-pill">@lang('main.order-declined')</button>
+                        <button onclick="changeOrderStatus(event)" type="button" class="btn btn-outline-danger rounded-pill">@lang('main.order-declined')</button>
                       </form>
                     </div>
                     @endif
@@ -265,7 +265,7 @@
                         <input type="hidden" name="order_id" value="{{$product->id}}">
                         <input type="hidden" name="status" value="shipped">
                         <input type="hidden" name="" value="{{request('q')}}">
-                        <button type="submit" class="btn btn-success">@lang('main.order-shipped')</button>
+                        <button onclick="changeOrderStatus(event)" type="button" class="btn btn-success">@lang('main.order-shipped')</button>
                     </form>
                     @endif
                     @if(($product->status == 'shipped' && $product->delegate_from_out == 'in_resturant')|| $product->status=='new_order')
@@ -274,7 +274,7 @@
                         <input type="hidden" name="order_id" value="{{$product->id}}">
                         <input type="hidden" name="status" value="completed">
                         <input type="hidden" name="" value="{{request('q')}}">
-                        <button type="submit" class="btn btn-success">@lang('main.order-completed')</button>
+                        <button onclick="changeOrderStatus(event)" type="button" class="btn btn-success">@lang('main.order-completed')</button>
                     </form>
                     @endif
                     
@@ -283,7 +283,7 @@
                     @endif
                 @endif
                    @if($product->status=='accepted')
-                    <a onclick="submitAndPrint({{$product->id}})"  class="btn btn-primary"><i class="fa fa-print"></i>@lang('main.print fatoorah')</a>
+                    <a onclick="printInvoice({{$product->id}})"  class="btn btn-primary"><i class="fa fa-print"></i>@lang('main.print fatoorah')</a>
 
                     @endif
                 <a href="{{route('vendor.getSingleOrder', $product->id)}}">@lang('main.order details')</a>

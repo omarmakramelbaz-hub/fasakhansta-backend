@@ -68,13 +68,18 @@ class NotifyAdminNewDelegateAndVendorNotification extends Notification
         //     // }
             
         // }
-        if($notifiable->device_token){
-         $tokens= $notifiable->device_token ; 
-          $this->sendFcmNotification( $tokens ,$this->body_data) ;
-        }
-        if($notifiable->fcm_id){
-             $tokens= $notifiable->fcm_id ; 
-              $this->sendFcmNotification( $tokens ,$this->body_data) ;
+        // if($notifiable->device_token){
+        //  $tokens= $notifiable->device_token ; 
+        //   $this->sendFcmNotification( $tokens ,$this->body_data) ;
+        // }
+        // if($notifiable->fcm_id){
+        //      $tokens= $notifiable->fcm_id ; 
+        //       $this->sendFcmNotification( $tokens ,$this->body_data) ;
+        // }
+
+        if($notifiable->my_tokens){
+            $tokens= $notifiable->my_tokens ; 
+            $this->sendFcmNotification( $tokens ,$this->body_data) ;
         }
        
         

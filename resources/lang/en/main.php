@@ -7,6 +7,7 @@ return [
 'enter password' => 'Enter password',
 'enter email' => 'Enter your email',
 'login' => 'Login',
+"show more" => "Show more",
 'there is an error in email or password' => 'There is an error in email or password',
 'check account verification' => 'Check your email',
 'code successed' => 'The code was successfully entered',

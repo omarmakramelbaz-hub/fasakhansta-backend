@@ -15,9 +15,18 @@ use Illuminate\Database\Eloquent\Model;
 use Auth;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\Ticket;
+use App\Models\SocialAccount;
 class User extends Authenticatable implements JWTSubject, HasMedia{
 	use HasFactory, Notifiable,HasRoles;
     use InteractsWithMedia;
+
+    /**
+     * Get the social accounts for the user.
+     */
+    public function socialAccounts()
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
 	protected $table = 'users';
 	protected $guard_name = 'admin';
 	protected $guarded = [];
@@ -185,5 +194,28 @@ class User extends Authenticatable implements JWTSubject, HasMedia{
             return 0;
         }
         return 1;
+    }
+
+    public function tokens(){
+        return $this->hasMany(UserToken::class,'user_id');
+    }
+
+    public function getMyTokensAttribute(){
+        return $this->tokens()->get('token')->toArray();
+    }
+
+    public function newOrExistingToken($token)
+    {
+        $userToken = $this->tokens()->where('token', $token)->first();
+        if ($userToken) {
+            return $userToken;
+        }
+
+        if ($this->tokens()->count() >= 5) {
+            $latestIds = $this->tokens()->latest()->take(4)->pluck('id');
+            $this->tokens()->whereNotIn('id', $latestIds)->delete();
+        }
+
+        return $this->tokens()->create(['token' => $token]);
     }
 }

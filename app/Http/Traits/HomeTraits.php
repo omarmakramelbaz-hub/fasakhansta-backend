@@ -32,28 +32,42 @@ trait HomeTraits
         return QuestionAnswer::get();
     }
     
-    public function slidear_data(){
-        if(request('lat') != null && request('lng') != null){
-            $city_name =getCityName(request('lat'), request('lng'));
-         $latitude=request('lat');
-        $longitude=request('lng');
-    $area = Area::where('title_ar', 'LIKE', '%' . $city_name . '%')->orWhere('title_en', 'LIKE', '%' . $city_name . '%')->first();
-    // dd($area);
-    $resturant=Resturant::query();
-      $resturant =$resturant->select(\DB::raw('*, ( 6367 * acos( cos( radians('.$latitude.') ) * cos( radians( lat ) ) * 
-                      cos( radians( lng ) - radians('.$longitude.') ) + sin( radians('.$latitude.') ) * sin( radians( lat ) ) ) ) AS distance'))
-                    ->having('distance', '<', 10000000)
-                   ->orWhereHas('resturant_areas',function($q) use ($area){
-                        $q->where('area_id' ,$area->id);
-                    })->pluck('id')->toArray();
-            $sliders= Slidear::whereIn('restraunt_id',$resturant)->orWhereNull('restraunt_id')->get();
-    
-            return $sliders;
+    public function slidear_data()
+    {
+        if (request('lat') != null && request('lng') != null) {
+            $latitude = request('lat');
+            $longitude = request('lng');
+
+            $city_name = getCityName($latitude, $longitude);
+            $area = Area::where('title_ar', 'LIKE', '%' . $city_name . '%')->orWhere('title_en', 'LIKE', '%' . $city_name . '%')->first();
+
+            $restaurantAreas = \App\Models\ResturantArea::whereNotNull('lat')
+                ->whereNotNull('lng')
+                ->whereNotNull('expected_delivery')
+                ->get();
+
+            $restaurantIds = $restaurantAreas->filter(function ($restaurantArea) use ($latitude, $longitude) {
+                $distance = $this->calculateDistance(
+                    $latitude,
+                    $longitude,
+                    $restaurantArea->lat,
+                    $restaurantArea->lng
+                );
+                return $distance <= $restaurantArea->expected_delivery;
+            })->pluck('resturant_id')->toArray();
+
+            if ($area) {
+                $areaRestaurantIds = \App\Models\ResturantArea::where('area_id', $area->id)->pluck('resturant_id')->toArray();
+                $restaurantIds = array_unique(array_merge($restaurantIds, $areaRestaurantIds));
             }
-          else{
-              $sliders= Slidear::whereNull('restraunt_id')->get();
-              return $sliders;
-          }
+
+            $sliders = Slidear::whereIn('restraunt_id', $restaurantIds)->orWhereNull('restraunt_id')->get();
+
+            return $sliders;
+        } else {
+            $sliders = Slidear::whereNull('restraunt_id')->get();
+            return $sliders;
+        }
     }
     
     public function generateUniqueCode($length = 10)
@@ -63,5 +77,28 @@ trait HomeTraits
         } while (CouponSubscripe::where('user_coupon_code', $code)->exists());
 
         return $code;
+    }
+    
+    private function calculateDistance($lat1, $lng1, $lat2, $lng2)
+    {
+        $earthRadius = 6371; // Earth's radius in kilometers
+
+        $lat1 = deg2rad($lat1);
+        $lng1 = deg2rad($lng1);
+        $lat2 = deg2rad($lat2);
+        $lng2 = deg2rad($lng2);
+
+        $latDiff = $lat2 - $lat1;
+        $lngDiff = $lng2 - $lng1;
+
+        $a = sin($latDiff / 2) * sin($latDiff / 2) +
+            cos($lat1) * cos($lat2) *
+            sin($lngDiff / 2) * sin($lngDiff / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        $distance = $earthRadius * $c;
+
+        return $distance;
     }
 }

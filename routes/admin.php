@@ -26,6 +26,7 @@ use App\Http\Controllers\Dashboard\FcmNotificationsController;
 use App\Http\Controllers\Dashboard\AdvertisingController;
 use App\Http\Controllers\Dashboard\WalletController;
 use App\Http\Controllers\Dashboard\CouponWheelController;
+use App\Http\Traits\FcmFirebase;
 
 Route::get('/clear-cache-admin', function() {
     $exitCode0 = Artisan::call('route:clear');
@@ -37,7 +38,7 @@ Route::get('/clear-cache-admin', function() {
     
     return 'done';
 });
-
+Route::get('test-notification' , [FcmNotificationsController::class , 'testNotification']);
 Route::get('/change-language/{lang}', [HomeController::class,'changeLang'])->middleware('lang');
 Route::get('/generate-qr/{ticket}', [HomeController::class, 'generatQr'])->name('generate-qr');
 Route::get('download-daily-report-pdf', [OrderController::class,'download_daily_report'])->name('download-daily-report-pdf');
@@ -58,7 +59,7 @@ Route::post('send_chat_notification', [FcmNotificationsController::class, 'send_
         Route::get('/chat', [FcmNotificationsController::class, 'chat']);
         
                         Route::get('/resturantControl', [HomeController::class, 'resturantControl'])->name('resturantControl');
-
+        Route::get('/getOrders', [OrderController::class, 'getOrders'])->name('getOrders');
        
         Route::post('/updateorders/{order}', ['App\Http\Controllers\Api\V1\Vendor\OrderController','updateOrder'])->name('vendor.updateOrder');
         Route::post('/acceptOrder/{order}', ['App\Http\Controllers\Api\V1\Vendor\OrderController','acceptOrder'])->name('vendor.acceptOrder');

@@ -25,6 +25,38 @@ class OrderController extends Controller
         $this->middleware('permission:order-list', ['only' => ['index','show']]);
         $this->middleware('permission:order-delete', ['only' => ['destroy','delete_all']]);
     }
+
+    public function getOrders(Request $request)
+    {
+        // Get orders for each status group with limit 20
+        $pendingOrders = Order::has('carts')->orderBy('id','DESC')->whereIn('status', ['pending', 'another_delegate'])
+            ->latest()
+            ->limit(20)
+            ->get();
+
+        $acceptedOrders = Order::has('carts')->orderBy('id','DESC')->whereIn('status', ['accepted', 'shipped', 'new_order'])
+            ->latest()
+            ->limit(20)
+            ->get();
+
+        $completedOrders = Order::has('carts')->orderBy('id','DESC')->where(function($query) {
+                $query->whereIn('status', ['completed', 'cancelled', 'declined'])
+                    ->orWhereNull('status');
+            })
+            ->latest()
+            ->limit(20)
+            ->get();
+
+        // Combine all orders
+        $orders = $pendingOrders->merge($acceptedOrders)->merge($completedOrders);
+
+        $view = view('admin.orders.order_section', compact('orders'))->render();
+
+        return response()->json([   
+            'view' => $view,
+            'count' => $orders->count()
+        ]);
+    }
      public function downloadInvoice(Request $request)
     {        
         
@@ -79,11 +111,13 @@ class OrderController extends Controller
                 $query->where('created_at', '>=', $from_date);
             })->when($request->query('to_date'), function($query, $to_date) {
                 $query->where('created_at', '<=', $to_date);
-            })->where('type','!=','wallet')->whereNotNull('status');
+            });
+            // ->where('type','!=','wallet');
+            // ->whereNotNull('status')
             if(auth('admin')->user()->account_type=='vendor'){
-                $orders=$orders->where('type','current');
+                // $orders=$orders->where('type','current');
             }
-           $orders=$orders->orderBy('order_no','DESC')->paginate(30);
+           $orders=$orders->orderBy('id','DESC')->paginate(30);
         return view('admin.orders.index', compact('orders'));
     }
 
@@ -102,14 +136,17 @@ class OrderController extends Controller
     
     public function applies()
     {
-        $orders = Order::query();
+        $orders = Order::query()->with('carts');
         
 
         if(request('q') == 'accepted'){
         $orders = $orders->whereIn('status',['accepted','shipped','new_order']);
         }
         else if(request('q') == 'completed'){
-        $orders = $orders->whereIn('status',['completed','cancelled','declined']);
+        $orders = $orders->where(function ($q) {
+                    $q->whereIn('status', ['cancelled', 'completed', 'declined'])
+                      ->orWhereNull('status');
+                });
         }
         else if(request('q') == 'pending'){
         $orders = $orders->whereIn('status',['pending','another_delegate']);
@@ -130,10 +167,10 @@ class OrderController extends Controller
         }
        
          if(request()->q){
-              $orders = $orders->has('carts')->where('type','!=','wallet')->whereNotNull('status')->orderBy('id','DESC')->paginate(10);
+              $orders = $orders->has('carts')->orderBy('id','DESC')->paginate(10);
             return view('admin.orders.applies', compact('orders'));
          }else{
-              $orders = $orders->has('carts')->where('type','!=','wallet')->whereNotNull('status')->orderBy('id','DESC')->get();
+              $orders = $orders->has('carts')->orderBy('id','DESC')->get();
               return view('admin.orders.applies_card', compact('orders'));
          }
     }

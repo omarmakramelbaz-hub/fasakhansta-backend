@@ -52,6 +52,7 @@ class ResturantRepository implements ResturantRepositoryInterface
     {
         unset($ResturantDetails['logo'],$ResturantDetails['bg_image']);
         unset($ResturantDetails['area_id'], $ResturantDetails['expected_delivery']);
+        unset($ResturantDetails['area_lat'], $ResturantDetails['area_lng']);
         $Resturant = Resturant::create($ResturantDetails);       
         if(request()->hasFile('logo') && request()->file('logo')->isValid())
         {
@@ -64,7 +65,7 @@ class ResturantRepository implements ResturantRepositoryInterface
             $Resturant->addMediaFromRequest('bg_image')->toMediaCollection('bg_image','resturants');
         }
         $Resturant->resturant_areas()->delete();
-        if(request('area_id')){
+        if(request('area_id') && !empty(request('area_id')[0])){
             $Resturant->area_id = request('area_id')[0];
             $Resturant->save();
         }
@@ -73,9 +74,11 @@ class ResturantRepository implements ResturantRepositoryInterface
             ResturantArea::create([
                     'added_by' => request('added_by'),
                     'resturant_id' => $Resturant->id,
-                    'area_id' => request('area_id')[$i],
-                    'expected_delivery' => request('expected_delivery')[$i],
-                    'type' => ($i==0)? 'kilo':'day',
+                    'area_id' => !empty(request('area_id')[$i]) ? request('area_id')[$i] : null,
+                    'expected_delivery' => request('expected_delivery')[$i] ?? null,
+                    'type' => 'kilo',
+                    'lat' => request('area_lat')[$i] ?? null,
+                    'lng' => request('area_lng')[$i] ?? null,
                 ]);
         }
         }
@@ -112,6 +115,7 @@ class ResturantRepository implements ResturantRepositoryInterface
     {
         unset($newDetails['logo'],$newDetails['bg_image'], $newDetails['email']);
         unset($newDetails['area_id'], $newDetails['expected_delivery']);
+        unset($newDetails['area_lat'], $newDetails['area_lng']);
         $Resturant = Resturant::whereId($ResturantId)->first();
         if(request()->hasFile('logo') && request()->file('logo')->isValid())
         {
@@ -130,7 +134,7 @@ class ResturantRepository implements ResturantRepositoryInterface
         if(request('area_id')){
         $Resturant->resturant_areas()->delete();
 
-            $Resturant->area_id = request('area_id')[0];
+            if(!empty(request('area_id')[0])) { $Resturant->area_id = request('area_id')[0]; }
             $Resturant->save();
         
         
@@ -138,9 +142,11 @@ class ResturantRepository implements ResturantRepositoryInterface
             ResturantArea::create([
                     'added_by' => request('added_by'),
                     'resturant_id' => $Resturant->id,
-                    'area_id' => request('area_id')[$i],
-                    'expected_delivery' => request('expected_delivery')[$i],
-                    'type' => ($i==0)? 'kilo':'day',
+                    'area_id' => !empty(request('area_id')[$i]) ? request('area_id')[$i] : null,
+                    'expected_delivery' => request('expected_delivery')[$i] ?? null,
+                    'type' => 'kilo',
+                    'lat' => request('area_lat')[$i] ?? null,
+                    'lng' => request('area_lng')[$i] ?? null,
                 ]);
         }
         }
