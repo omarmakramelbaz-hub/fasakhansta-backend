@@ -1,34 +1,35 @@
 <?php
 namespace App\Events;
 
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use App\Models\Order;
-class OrderUpdated implements ShouldBroadcast
+class OrderUpdated implements ShouldBroadcastNow
 {
     public $order;
     public $orderCount;
     public $senderId;
+    public $action;
 
-    public function __construct($order, $orderCount,$senderId)
-    {
-         if ($order instanceof Order) {
-              $this->order = $order;
-         }else{
-             $this->order=Order::find($order);
-         }
-        $this->orderCount = $orderCount;
-        $this->senderId = $senderId;
-
+   public function __construct($order, $orderCount, $senderId, $action = 'new')
+{
+    if ($order instanceof Order) {
+        $this->order = $order;
+    } else {
+        $this->order = Order::find($order);
     }
 
+    $this->orderCount = $orderCount;
+    $this->senderId = $senderId;
+    $this->action = $action;
+}
+    
     public function broadcastOn()
-    {
-        return new PrivateChannel('user.'.$this->order->resturant?->user_id);
-
-    }
-
+{
+    return new PrivateChannel('user.'.$this->senderId);
+}
     public function broadcastAs()
     {
         return 'order.updated'; // Event name
@@ -42,6 +43,7 @@ class OrderUpdated implements ShouldBroadcast
             'order_date' => \Carbon\Carbon::parse($this->order->created_at)->format('d/m/Y'),
             'order_time' =>  \Carbon\Carbon::parse($this->order->created_at)->diffForHumans(),
             'orderCount' => $this->orderCount,
+            'action' => $this->action,
             'message' => 'You have a new order!',
         ];
     }

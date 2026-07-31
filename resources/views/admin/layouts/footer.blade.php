@@ -228,17 +228,23 @@ if ('serviceWorker' in navigator) {
 
 // // Listen for messages from the service worker
 navigator.serviceWorker.addEventListener('message', (event) => {
-    // console.log('ffdfdfdsfdsfsdf' , event.data.firebaseMessaging.payload.data.account_type)
-                // const clickAction = event.data.firebaseMessaging.payload.data.click_action;
-            // console.log(clickAction);
-            // if (event.data.type === 'PLAY_SOUND') {
-                const audio = new Audio(`{{url('/')}}/sounds/mixkit-correct-answer-reward-952.wav`); // your file in public/sounds/
-                audio.loop = true;
-                audio.play().catch(err => console.warn('Audio play failed:', err));
-    if ($('#all_orders').length) {
-        reloadOrderSections();
-    } 
 
+    if (event.data.type === 'PLAY_SOUND') {
+        playSound();
+    }
+
+    if (event.data.type === 'STOP_SOUND') {
+        stopSound();
+
+        $('#alertBanner').remove();
+        $('#notifications').empty();
+
+        if ($('#all_orders').length) {
+            reloadOrderSections();
+        }
+    }
+
+});
             // }
           // Check if the page is in the background
             // if (document.visibilityState === 'hidden' && clickAction) {
@@ -797,6 +803,15 @@ $(document).ready(function () {
     channel.bind('order.updated', function (data) {
         console.log('vendor Notification received:', data);
 
+        if (data.action === "accepted" || data.action === "declined") {
+            console.log("Order Action:", data.action);
+            if (typeof stopSound === "function") stopSound();
+            $("#alertBanner").remove();
+            $("#notifications").empty();
+            if (typeof reloadOrderSections === "function") reloadOrderSections();
+            return;
+        }
+
         const orderId = data.order_id || 'Unknown ID';
         const orderCount = data.orderCount || 1;
         const orderNo = data.order_no || 'Unknown ID';
@@ -861,10 +876,26 @@ openOrFocusWindow(orderId);
       
         showNotification('New Order Received!', `Order ID: ${orderId}`, `{{url('admin/applies-orders?modal=${orderId}')}}`);
     });
-    
+channel.bind('user.updated', function (data) {
+
+    console.log('User Updated:', data);
+
+    if (typeof stopSound === 'function') {
+        stopSound();
+    }
+
+    $('#alertBanner').remove();
+    $('#notifications').empty();
+
+    if (typeof reloadOrderSections === 'function') {
+        reloadOrderSections();
+    }
+
+});    
     // Listen for events
 //     channel.bind('vendor.updated', function (data) {
 //         console.log('vendor Notification received:', data);
+
 
 //         const orderId = data.order_id.order_id || 'Unknown ID';
 //         const orderCount = data.order_id.orderCount || 1;

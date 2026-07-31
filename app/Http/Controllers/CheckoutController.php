@@ -36,12 +36,15 @@ class CheckoutController extends Controller
             $updated = $order->update(['tax'=>$tax,'vendor_tax'=>$vendor_tax,'user_tax'=>$user_tax,'resturant_id'=>$order->carts()->first()->resturant_id, 'created_at' => now()]);
             $orderCount = $order->resturant->orders()->where('status','pending')->whereDate('created_at', '=', now()->toDateString())->count();
 
-            
-                    // Broadcast the orders using Pusher
-             broadcast(new OrderUpdated($order->id,$orderCount,$order->user_id));
+           
+ 
+
+// Broadcast the orders using Pusher
+broadcast(new OrderUpdated($order->id,$orderCount,$order->user_id));
               $resturant_owner = User::whereHas('base_resturant',function($q) use ($order){
                     $q->where('id',$order->resturant_id);
                 })->first();
+
                              broadcast(new VendorUpdated($order->id,$orderCount,$resturant_owner->id));
 // for resturant owner dashboard
  broadcast(new OrderUpdated($order->id,$orderCount,$resturant_owner->id));

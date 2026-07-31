@@ -72,3 +72,11 @@ self.playSound = function () {
     }
   });
 };
+// Send STOP_SOUND message to all windows
+self.stopSound = function () {
+  self.clients.matchAll({ includeUncontrolled: true, type: 'window' }).then(clients => {
+    for (const client of clients) {
+      client.postMessage({ type: 'STOP_SOUND' });
+    }
+  });
+};

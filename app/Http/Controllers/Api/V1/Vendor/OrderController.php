@@ -1,6 +1,9 @@
 <?php
 namespace App\Http\Controllers\Api\V1\Vendor;
+use App\Services\OrderBroadcastService;
+use App\Services\OrderAction;
 use App\Events\OrderStatusUpdated;
+use App\Events\OrderUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Resturant;
@@ -144,9 +147,11 @@ class OrderController extends Controller
 
                 });
             }
-            broadcast(new UserUpdated($order, 1, $order->user_id));
-            broadcast(new OrderFinishedUpdated($order, 1, $order->user_id));
-            event(new OrderStatusUpdated($order));
+            OrderBroadcastService::accept($order);
+
+broadcast(new OrderFinishedUpdated($order, 1, $order->user_id));
+
+event(new OrderStatusUpdated($order));
             if ($request->wantsJson() || $request->is('api/*')) {
                 $orderData = OrderResource::make($order->fresh());
                 return $this->successResponse($orderData, __('api.order has prepared from resturant'));
@@ -156,9 +161,24 @@ class OrderController extends Controller
 
         }
         if ($request->type == 'out_resturant') {
-            $order->update(['delegate_from_out' => 'out_resturant']);
-            broadcast(new OrderFinishedUpdated($order, 1, $order->user_id));
-            $this->searchDelegates();
+
+    $order->update(['delegate_from_out' => 'out_resturant']);
+
+    // إشعار العميل
+    broadcast(new OrderFinishedUpdated($order, 1, $order->user_id));
+
+    // إشعار الفرع
+    $vendor = User::find(optional($order->resturant)->user_id);
+    if ($vendor) {
+        OrderBroadcastService::outForDelivery($order);
+    }
+
+    // إشعار الإدارة الرئيسية (الحساب 635)
+    $mainAdmin = User::where('account_type', 'resturant_owner')->first();
+    if ($mainAdmin) {
+    }
+
+    $this->searchDelegates();
 
             if ($request->wantsJson() || $request->is('api/*')) {
                 $orderData = OrderResource::make($order->fresh());
@@ -217,11 +237,22 @@ class OrderController extends Controller
 
     public function updateOrderStatus(Request $request, Order $order)
     {
-        if ($order->status != $request->status) {
+    
+\Log::info('UPDATE_ORDER_STATUS', [
+    'order_id' => $order->id,
+    'status' => $request->status,
+    'customer_id' => $order->user_id,
+    'restaurant_owner_id' => optional($order->resturant)->user_id,
+]);    if ($order->status != $request->status) {
             $data = $order->update(['status' => $request->status]);
-            broadcast(new UserUpdated($order, 1, $order->user_id));
-            $user_order_owner = User::where('id', $order->user_id)->first();
-            $resturant_owner = User::where('id', $order->resturant->user_id)->first();
+            OrderBroadcastService::decline($order);
+
+$user_order_owner = User::where('id', $order->user_id)->first();
+$resturant_owner = User::where('id', $order->resturant->user_id)->first();
+
+// تحديث جميع شاشات الأدمن
+if ($resturant_owner) {
+}
             if ($order->status == 'completed') {
                 if ($order->payment_type != 'cash') {
                     $user_price = $order->total - $order->updated_total;
@@ -313,11 +344,19 @@ class OrderController extends Controller
     public function acceptOrder(Request $request, Order $order)
     {
         if ($order->accepted_notify != 'yes') {
-            $data = $order->update(['accepted_notify' => 'yes']);
-            broadcast(new UserUpdated($order, 1, $order->user_id));
-            Notification::send($order->user, new \App\Notifications\NotifyAcceptOrderNotification($order));
 
-        }
+    $data = $order->update(['accepted_notify' => 'yes']);
+
+    // إشعار العميل
+    OrderBroadcastService::accept($order);
+
+    // إشعار الفرع
+    $vendor = User::find(optional($order->resturant)->user_id);
+    if ($vendor) {
+    }
+
+    Notification::send($order->user, new \App\Notifications\NotifyAcceptOrderNotification($order));
+}
         if ($request->wantsJson() || $request->is('api/*')) {
             return $this->successResponse("success", __('api.accepted order successfully'));
         } else {

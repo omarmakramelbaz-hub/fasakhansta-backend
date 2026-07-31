@@ -415,6 +415,7 @@ class CartController extends Controller
                     // if ($resturant_owner?->base_resturant?->parent) {
                     //     $userRestOwnerParent = $resturant_owner->base_resturant->parent;
                     // }
+
                     // Broadcast the orders using Pusher
                     broadcast(new VendorUpdated($order, $orderCount, $resturant_owner->id));
                     if ($userRestOwnerParent) {
