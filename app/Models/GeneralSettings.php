@@ -16,7 +16,7 @@ class GeneralSettings extends Settings
     public string $phone;
     public string $min_order_price;
     public string $service_fees;
-    public string $address;    
+    public string $address;
     public string $twitter_link;
     public string $facebook_link;
     public string $instagram_link;
@@ -29,10 +29,10 @@ class GeneralSettings extends Settings
     public string $about_en;
     public string $applestore_link;
     public string $googleplay_link;
-    
+
     public string $vendor_applestore_link;
     public string $vendor_googleplay_link;
-    
+
     public string $delegate_applestore_link;
     public string $delegate_googleplay_link;
 
@@ -46,58 +46,63 @@ class GeneralSettings extends Settings
     public string $app_balance;
     public string $advertise_resturant_id;
     public string $advertise_image;
+    public string $header_image;
     public string $slider_text_ar;
     public string $slider_text_en;
     public string $slider_title_ar;
     public string $slider_title_en;
-    
+
     public string $shipping_km_price;
     public string $shipping_min_price;
     public string $shipping_cancelled_block_no;
 
-   public string $app_banner_background_color;
-   public string $delegate_vendor_small_info;
+    public string $app_banner_background_color;
+    public string $delegate_vendor_small_info;
 
-   public string $default_0_1;
-   public string $default_1_2;
-   public string $default_2_3;
+    public string $default_0_1;
+    public string $default_1_2;
+    public string $default_2_3;
 
     public string $min_wallet;
     public static function group(): string
     {
         return 'general';
     }
-    
+
     public function policy(){
-         $lang = app()->getLocale();
+        $lang = app()->getLocale();
         $column = "policy_" . $lang;
-        return $this->{$column};;
+        return $this->{$column};
     }
-     public function terms(){
-         $lang = app()->getLocale();
+
+    public function terms(){
+        $lang = app()->getLocale();
         $column = "terms_" . $lang;
-        return $this->{$column};;
+        return $this->{$column};
     }
-     public function contact_text(){
-         $lang = app()->getLocale();
+
+    public function contact_text(){
+        $lang = app()->getLocale();
         $column = "contact_text_" . $lang;
-        return $this->{$column};;
+        return $this->{$column};
     }
-     public function about(){
-         $lang = app()->getLocale();
+
+    public function about(){
+        $lang = app()->getLocale();
         $column = "about_" . $lang;
-        return $this->{$column};;
+        return $this->{$column};
     }
-    
+
     public function slider_text(){
-         $lang = app()->getLocale();
+        $lang = app()->getLocale();
         $column = "slider_text_" . $lang;
-        return $this->{$column};;
+        return $this->{$column};
     }
-     public function slider_title(){
-         $lang = app()->getLocale();
+
+    public function slider_title(){
+        $lang = app()->getLocale();
         $column = "slider_title_" . $lang;
-        return $this->{$column};;
+        return $this->{$column};
     }
 }
 ?>
