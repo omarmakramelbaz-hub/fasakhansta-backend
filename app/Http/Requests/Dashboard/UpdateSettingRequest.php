@@ -6,28 +6,17 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateSettingRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
     public function authorize()
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
     public function rules()
     {
         return [
-            'site_name' => 'required|string|min:3', 
+            'site_name' => 'required|string|min:3',
             'email' => 'required|email',
             'phone' => 'required|numeric',
-            // 'another_phone' => 'sometimes|nullable|numeric',
             'twitter_link' => 'sometimes|nullable|url',
             'facebook_link' => 'sometimes|nullable|url',
             'google_link' => 'sometimes|nullable|url',
@@ -38,7 +27,6 @@ class UpdateSettingRequest extends FormRequest
             'vendor_googleplay_link' => 'required|url',
             'delegate_applestore_link' => 'nullable|url',
             'delegate_googleplay_link' => 'required|url',
-            
             'wallet_card_activate' => 'sometimes|nullable',
             'payment_card_activate' => 'sometimes|nullable',
             'about_ar' => 'required|string|min:1|max:2400',
@@ -47,7 +35,6 @@ class UpdateSettingRequest extends FormRequest
             'slider_title_en' => 'required|string|min:1|max:2400',
             'slider_text_ar' => 'required|string|min:1|max:2400',
             'slider_text_en' => 'required|string|min:1|max:2400',
-
             'logo' => 'sometimes|nullable|image',
             'favicon' => 'sometimes|nullable|image',
             'address' => 'required|string|min:3|max:1000',
@@ -65,10 +52,7 @@ class UpdateSettingRequest extends FormRequest
             'shipping_min_price' => 'required|numeric',
             'shipping_cancelled_block_no'=>'required|numeric|min:1',
             'app_banner_background_color'=>'required',
-            // 'default_0_1' => 'required|numeric|min:0',
-            // 'default_1_2' => 'required|numeric|min:0',
-            // 'default_2_3' => 'required|numeric|min:0',
-
+            'header_image' => 'sometimes|nullable|image|max:10240',
         ];
     }
 }
