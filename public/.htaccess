@@ -5,6 +5,14 @@
 
     RewriteEngine On
 
+    # Allow the Flutter Web customer app to load public images/media.
+    # These files are public assets, so wildcard CORS is appropriate here.
+    <IfModule mod_headers.c>
+        Header always set Access-Control-Allow-Origin "*"
+        Header always set Access-Control-Allow-Methods "GET, OPTIONS"
+        Header always set Access-Control-Allow-Headers "*"
+    </IfModule>
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
