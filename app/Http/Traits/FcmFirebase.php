@@ -34,7 +34,7 @@ trait FcmFirebase {
         $notification_type = (string) $data['data']['notification_type'];
         $projectId = config('services.fcm.project_id');
         
-        $credentialsFilePath = public_path('firebase_credentials.json');
+        $credentialsFilePath = storage_path('app/firebase_credentials.json');
         
         // Initialize Google Client and get access token
         $client = new GoogleClient();

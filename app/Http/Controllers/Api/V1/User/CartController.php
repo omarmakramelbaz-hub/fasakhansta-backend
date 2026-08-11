@@ -95,7 +95,7 @@ class CartController extends Controller
             // }
 
             $cart_data = new CartResource($cart);
-            return $this->successResponse($cart_data, __('api.AddToCartSuccessfully'));
+        return $this->successResponse($cart_data, __('api.AddToCartSuccessfully'));
         } else {
             return $this->msgResponse(__('api.empty your cart first'));
         }
@@ -281,8 +281,8 @@ class CartController extends Controller
     //  ===================================================================================
 
 
-    public function order_payment(OrderRequest $request, GeneralSettings $setting)
-    {
+    public function order_payment(OrderRequest $request, GeneralSettings $setting){
+        $__perf = microtime(true);
         if (auth('api')->user()->otp_first_order == 0) {
             $user = auth('api')->user();
             $user->otp_first_no = mt_rand(1111, 9999);
@@ -403,10 +403,14 @@ class CartController extends Controller
                     }
                     $email = $order->user?->email;
                     if ($email) {
-                        Mail::send('emails.send_order_email', ['email' => $email, 'cart' => $order], function ($message) use ($email) {
-                            $message->to($email);
-                            $message->subject('Your order has been received!');
-                        });
+                        try {
+                            Mail::send('emails.send_order_email', ['email' => $email, 'cart' => $order], function ($message) use ($email) {
+                                $message->to($email);
+                                $message->subject('Your order has been received!');
+                            });
+                        } catch (\Throwable $e) {
+                            \Log::error('Mail Error: '.$e->getMessage(), ['trace'=>$e->getTraceAsString()]);
+                        }
                     }
                     // $resturant_owner = User::with('base_resturant.parent')->whereHas('base_resturant', function ($q) use ($order) {
                     //     $q->where('id', $order->resturant_id);

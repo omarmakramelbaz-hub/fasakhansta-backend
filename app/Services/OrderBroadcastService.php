@@ -77,4 +77,19 @@ class OrderBroadcastService
     {
         broadcast(new UserUpdated($order, 1, $order->user_id));
     }
+
+    public static function complete(Order $order)
+    {
+        $vendor = self::vendor($order);
+
+        if ($vendor) {
+            broadcast(new OrderUpdated($order, 1, $vendor->id, "completed"));
+        }
+
+        $admin = self::mainAdmin();
+
+        if ($admin) {
+            broadcast(new OrderUpdated($order, 1, $admin->id, "completed"));
+        }
+    }
 }

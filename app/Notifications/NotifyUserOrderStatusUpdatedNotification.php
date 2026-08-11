@@ -52,7 +52,10 @@ class NotifyUserOrderStatusUpdatedNotification extends Notification
                 'text'      =>  'تم تحديث حالة الطلب رقم  '. $this->msg->order_no . ' إلي ' . __('main.'.$this->msg->status),
                 'created_at' => $this->msg->updated_at,
                 'data'       =>  [
-                    'notification_type' => 1,
+                    'notification_type' => 'live_activity',
+                    'live_activity' => true,
+                    'activity_id' => 'order_'.$this->msg->id,
+                    'order_status' => $this->msg->status,
                     'order_id'          => (int) $this->msg->id,
                     'resturant_id'      => $this->msg->resturant_id,
                     'user_id'           => $this->msg->user_id,
