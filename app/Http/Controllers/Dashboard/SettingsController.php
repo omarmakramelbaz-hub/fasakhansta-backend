@@ -63,9 +63,15 @@ class SettingsController extends Controller
         $settings->shipping_km_price = $request->input('shipping_km_price');
         $settings->shipping_min_price = $request->input('shipping_min_price');
         $settings->shipping_cancelled_block_no=$request->input('shipping_cancelled_block_no');
-        $settings->default_0_1 = $request->input('default_0_1');
-        $settings->default_1_2 = $request->input('default_1_2');
-        $settings->default_2_3 = $request->input('default_2_3');
+        if ($request->has('default_0_1')) {
+            $settings->default_0_1 = $request->input('default_0_1');
+        }
+        if ($request->has('default_1_2')) {
+            $settings->default_1_2 = $request->input('default_1_2');
+        }
+        if ($request->has('default_2_3')) {
+            $settings->default_2_3 = $request->input('default_2_3');
+        }
         
         $settings->app_banner_background_color=$request->input('app_banner_background_color');
         
