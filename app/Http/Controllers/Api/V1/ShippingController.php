@@ -228,6 +228,9 @@ public function order_payment(ShippingPaymentRequest $request,GeneralSettings $s
 
             return $this->successResponse(['user_data'=>$usersData,'shipping_order_id'=>$order?$order->id:0,'order_data'=>$order_data,'shipping_min_price_precentage'=>(double)$setting->shipping_min_price,
             'shipping_km_price'=>(double)$setting->shipping_km_price,
+            'default_0_1'=>(double)$setting->default_0_1,
+            'default_1_2'=>(double)$setting->default_1_2,
+            'default_2_3'=>(double)$setting->default_2_3,
             'go_drive_block'=>auth('api')->user()->go_drive_block,
             ],__('api.success data'));
         }else{
