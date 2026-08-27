@@ -40,6 +40,7 @@ use App\Http\Controllers\Api\V1\ShippingController;
 
 // Social Auth Routes
 Route::group(['prefix' => 'auth/social', 'namespace' => 'Api\V1\Auth'], function () {
+    Route::post('{provider}/token', [SocialAuthController::class, 'handleProviderToken']);
     Route::get('{provider}/redirect', [SocialAuthController::class, 'redirectToProvider']);
     Route::get('{provider}/callback', [SocialAuthController::class, 'handleProviderCallback']);
     Route::get('back' , [SocialAuthController::class, 'back'])->name('auth.back');
