@@ -65,9 +65,9 @@ class UpdateSettingRequest extends FormRequest
             'shipping_min_price' => 'required|numeric',
             'shipping_cancelled_block_no'=>'required|numeric|min:1',
             'app_banner_background_color'=>'required',
-            // 'default_0_1' => 'required|numeric|min:0',
-            // 'default_1_2' => 'required|numeric|min:0',
-            // 'default_2_3' => 'required|numeric|min:0',
+            'default_0_1' => 'required|numeric|min:0',
+            'default_1_2' => 'required|numeric|min:0',
+            'default_2_3' => 'required|numeric|min:0',
 
         ];
     }
