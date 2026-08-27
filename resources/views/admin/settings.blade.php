@@ -146,28 +146,28 @@
                   </div>
                 </div>
                 <div class="form-group col-sm-6"></div>
-                
-                <!-- <div class="form-group col-sm-6">-->
-                <!--  <label for="default_0_1">@lang('main.default_0_1')</label>-->
-                <!--  <div class="input-group mb-3">-->
-                <!--    <span class="input-group-text">@lang('main.egp')</span>-->
-                <!--    <input type="number" name="default_0_1" value="{{$settings->default_0_1}}" min="0" class="form-control" id="default_0_1" placeholder="@lang('main.default_0_1')">-->
-                <!--  </div>-->
-                <!--</div>-->
-                <!-- <div class="form-group col-sm-6">-->
-                <!--  <label for="default_1_2">@lang('main.default_1_2')</label>-->
-                <!--  <div class="input-group mb-3">-->
-                <!--    <span class="input-group-text">@lang('main.egp')</span>-->
-                <!--    <input type="number" name="default_1_2" value="{{$settings->default_1_2}}" min="0" class="form-control" id="default_1_2" placeholder="@lang('main.default_1_2')">-->
-                <!--  </div>-->
-                <!--</div>-->
-                <!-- <div class="form-group col-sm-6">-->
-                <!--  <label for="default_2_3">@lang('main.default_2_3')</label>-->
-                <!--  <div class="input-group mb-3">-->
-                <!--    <span class="input-group-text">@lang('main.egp')</span>-->
-                <!--    <input type="number" name="default_2_3" value="{{$settings->default_2_3}}" min="0" class="form-control" id="default_2_3" placeholder="@lang('main.default_2_3')">-->
-                <!--  </div>-->
-                <!--</div>-->
+
+                <div class="form-group col-sm-6">
+                  <label for="default_0_1">@lang('main.default_0_1')</label>
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">@lang('main.egp')</span>
+                    <input type="number" name="default_0_1" value="{{$settings->default_0_1}}" min="0" class="form-control" id="default_0_1" placeholder="@lang('main.default_0_1')">
+                  </div>
+                </div>
+                <div class="form-group col-sm-6">
+                  <label for="default_1_2">@lang('main.default_1_2')</label>
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">@lang('main.egp')</span>
+                    <input type="number" name="default_1_2" value="{{$settings->default_1_2}}" min="0" class="form-control" id="default_1_2" placeholder="@lang('main.default_1_2')">
+                  </div>
+                </div>
+                <div class="form-group col-sm-6">
+                  <label for="default_2_3">@lang('main.default_2_3')</label>
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">@lang('main.egp')</span>
+                    <input type="number" name="default_2_3" value="{{$settings->default_2_3}}" min="0" class="form-control" id="default_2_3" placeholder="@lang('main.default_2_3')">
+                  </div>
+                </div>
                 
                 <!--<div class="form-group col-sm-6"></div>-->
                 <div class="form-group col-sm-6">
