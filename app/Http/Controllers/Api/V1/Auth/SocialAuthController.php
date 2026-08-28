@@ -8,6 +8,7 @@ use App\Http\Traits\ApiResponses;
 use App\Models\SocialAccount;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
@@ -19,13 +20,17 @@ class SocialAuthController extends Controller
 
     /**
      * Redirect the user to the provider authentication page.
-     * Kept for server-driven OAuth flows.
+     * Kept for legacy server-driven OAuth flows.
      */
     public function redirectToProvider($provider)
     {
         $validated = $this->validateProvider($provider);
         if (!is_null($validated)) {
             return $validated;
+        }
+
+        if (!class_exists(Socialite::class)) {
+            return $this->errorResponse('Server-driven social login is not available.', 501);
         }
 
         $redirectUrl = url('/api/auth/social/' . $provider . '/callback');
@@ -40,7 +45,7 @@ class SocialAuthController extends Controller
     }
 
     /**
-     * Complete a server-driven OAuth callback.
+     * Complete a legacy server-driven OAuth callback.
      */
     public function handleProviderCallback($provider)
     {
@@ -49,10 +54,12 @@ class SocialAuthController extends Controller
             return $validated;
         }
 
+        if (!class_exists(Socialite::class)) {
+            return $this->errorResponse('Server-driven social login is not available.', 501);
+        }
+
         try {
             $redirectUrl = url('/api/auth/social/' . $provider . '/callback');
-            \Log::info('Callback URL: ' . $redirectUrl);
-
             $providerUser = Socialite::driver($provider)
                 ->redirectUrl($redirectUrl)
                 ->stateless()
@@ -68,9 +75,9 @@ class SocialAuthController extends Controller
     /**
      * Token-based social login for Flutter / SPA clients.
      *
-     * The client authenticates with Facebook or Google first, then sends the
-     * provider access token here. The backend verifies that token directly
-     * with the provider before creating or signing in the local user.
+     * Facebook and Google tokens are verified directly with the provider.
+     * This path intentionally does not depend on laravel/socialite because
+     * that package is not installed in this Laravel application.
      */
     public function handleProviderToken(Request $request, $provider)
     {
@@ -91,9 +98,9 @@ class SocialAuthController extends Controller
         }
 
         try {
-            $providerUser = Socialite::driver($provider)
-                ->stateless()
-                ->userFromToken($request->access_token);
+            $providerUser = $provider === 'facebook'
+                ? $this->facebookUserFromToken($request->access_token)
+                : $this->googleUserFromToken($request->access_token);
         } catch (\Throwable $e) {
             \Log::error('Social token verification failed [' . $provider . ']: ' . $e->getMessage());
             return $this->errorResponse('تعذر التحقق من حساب ' . ucfirst($provider) . '.', 400);
@@ -109,6 +116,105 @@ class SocialAuthController extends Controller
     }
 
     /**
+     * Validate a Facebook user token against this Meta app, then fetch profile.
+     */
+    protected function facebookUserFromToken(string $accessToken): array
+    {
+        $appId = (string) config('services.facebook.client_id');
+        $appSecret = (string) config('services.facebook.client_secret');
+
+        if ($appId === '' || $appSecret === '') {
+            throw new \RuntimeException('Facebook backend credentials are missing.');
+        }
+
+        $debugResponse = Http::timeout(12)->get('https://graph.facebook.com/debug_token', [
+            'input_token' => $accessToken,
+            'access_token' => $appId . '|' . $appSecret,
+        ]);
+
+        if (!$debugResponse->successful()) {
+            throw new \RuntimeException('Facebook token debug request failed.');
+        }
+
+        $debugData = $debugResponse->json('data');
+        if (!is_array($debugData)
+            || empty($debugData['is_valid'])
+            || (string) ($debugData['app_id'] ?? '') !== $appId) {
+            throw new \RuntimeException('Facebook token is invalid or belongs to another app.');
+        }
+
+        $profileResponse = Http::timeout(12)->get('https://graph.facebook.com/me', [
+            'fields' => 'id,name,email,picture.width(200)',
+            'access_token' => $accessToken,
+        ]);
+
+        if (!$profileResponse->successful()) {
+            throw new \RuntimeException('Facebook profile request failed.');
+        }
+
+        $profile = $profileResponse->json();
+        if (!is_array($profile) || empty($profile['id'])) {
+            throw new \RuntimeException('Facebook profile is missing the user id.');
+        }
+
+        return [
+            'id' => (string) $profile['id'],
+            'name' => $profile['name'] ?? null,
+            'email' => $profile['email'] ?? null,
+            'nickname' => null,
+        ];
+    }
+
+    /**
+     * Validate a Google access token against the configured Web client, then
+     * fetch the user's OpenID profile.
+     */
+    protected function googleUserFromToken(string $accessToken): array
+    {
+        $clientId = (string) config('services.google.client_id');
+        if ($clientId === '') {
+            throw new \RuntimeException('Google backend client id is missing.');
+        }
+
+        $tokenInfoResponse = Http::timeout(12)->get('https://oauth2.googleapis.com/tokeninfo', [
+            'access_token' => $accessToken,
+        ]);
+
+        if (!$tokenInfoResponse->successful()) {
+            throw new \RuntimeException('Google token validation failed.');
+        }
+
+        $tokenInfo = $tokenInfoResponse->json();
+        $audience = is_array($tokenInfo)
+            ? (string) ($tokenInfo['aud'] ?? $tokenInfo['audience'] ?? '')
+            : '';
+
+        if ($audience === '' || $audience !== $clientId) {
+            throw new \RuntimeException('Google token belongs to another client.');
+        }
+
+        $profileResponse = Http::timeout(12)
+            ->withToken($accessToken)
+            ->get('https://www.googleapis.com/oauth2/v3/userinfo');
+
+        if (!$profileResponse->successful()) {
+            throw new \RuntimeException('Google profile request failed.');
+        }
+
+        $profile = $profileResponse->json();
+        if (!is_array($profile) || empty($profile['sub'])) {
+            throw new \RuntimeException('Google profile is missing the user id.');
+        }
+
+        return [
+            'id' => (string) $profile['sub'],
+            'name' => $profile['name'] ?? null,
+            'email' => $profile['email'] ?? null,
+            'nickname' => null,
+        ];
+    }
+
+    /**
      * Find/create the local user and return the response shape expected by
      * the customer application: data.user_data + data.register.
      */
@@ -119,8 +225,8 @@ class SocialAuthController extends Controller
         ?string $countryCode = null,
         ?string $fcmId = null
     ) {
-        $providerId = trim((string) $providerUser->getId());
-        $email = $providerUser->getEmail();
+        $providerId = trim((string) $this->providerValue($providerUser, 'id'));
+        $email = $this->providerValue($providerUser, 'email');
         $email = is_string($email) ? trim($email) : null;
 
         if ($providerId === '') {
@@ -142,11 +248,13 @@ class SocialAuthController extends Controller
 
         if (!$user) {
             $register = 1;
+            $name = $this->providerValue($providerUser, 'name')
+                ?: $this->providerValue($providerUser, 'nickname')
+                ?: ucfirst($provider) . ' User';
+
             $user = User::create([
                 'added_by' => 1,
-                'name' => $providerUser->getName()
-                    ?? $providerUser->getNickname()
-                    ?? ucfirst($provider) . ' User',
+                'name' => $name,
                 'email' => $email,
                 'password' => Str::random(32),
                 'email_verified_at' => !empty($email) ? now() : null,
@@ -197,6 +305,27 @@ class SocialAuthController extends Controller
             'user_data' => $userData,
             'register' => $register,
         ], trans('api.signed'));
+    }
+
+    protected function providerValue($providerUser, string $field)
+    {
+        if (is_array($providerUser)) {
+            return $providerUser[$field] ?? null;
+        }
+
+        $methodMap = [
+            'id' => 'getId',
+            'name' => 'getName',
+            'email' => 'getEmail',
+            'nickname' => 'getNickname',
+        ];
+
+        $method = $methodMap[$field] ?? null;
+        if ($method && is_object($providerUser) && method_exists($providerUser, $method)) {
+            return $providerUser->{$method}();
+        }
+
+        return null;
     }
 
     protected function validateProvider($provider)
