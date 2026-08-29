@@ -16,7 +16,7 @@ class ResturantSingleResource extends JsonResource
 
             'vendor_email'               => $this->user?->email,
             'name'                      => $this->name,
-            'status'                    => $this->status,
+            'status'                    => $this->effective_status,
             'avg_rate'                  => (double) $this->avg_rate,
             'address'                   => $this->address,
             'logo'                      => $this->getFirstMediaUrl('logo','thumb'),
