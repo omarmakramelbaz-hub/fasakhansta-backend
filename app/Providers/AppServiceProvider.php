@@ -44,19 +44,15 @@ use App\Repositories\BannerRepository;
 
 use App\Interfaces\FeatureRepositoryInterface;
 use App\Repositories\FeatureRepository;
-    use App\Models\User;
+use App\Models\User;
+use App\Models\Order;
 use App\Observers\UserObserver;
+use App\Observers\OrderCompetitionObserver;
 use App\Observers\NotificationObserver;
-use App\Models\Notification;
 use Illuminate\Notifications\DatabaseNotification;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
     public function register()
     {
         $this->app->bind(UserAuthRepositoryInterface::class, UserAuthRepository::class);
@@ -77,25 +73,17 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(QuestionAnswerRepositoryInterface::class, QuestionAnswerRepository::class);
     }
 
-    /**
-     * Bootstrap any application services.
-     *
-     * @return void
-     */
     public function boot()
     {
         Paginator::useBootstrap();
-    User::observe(UserObserver::class);
-    DatabaseNotification::observe(NotificationObserver::class);
+        User::observe(UserObserver::class);
+        Order::observe(OrderCompetitionObserver::class);
+        DatabaseNotification::observe(NotificationObserver::class);
 
         view()->composer('*', function ($view)
         {
             // $site_trademarks = \App\Models\Trademark::latest()->get();
-
             // $view->with(compact('site_trademarks'));
         });
-
     }
-
-
 }
