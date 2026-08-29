@@ -75,9 +75,10 @@ class SocialAuthController extends Controller
     /**
      * Token-based social login for Flutter / SPA clients.
      *
-     * Facebook and Google tokens are verified directly with the provider.
-     * This path intentionally does not depend on laravel/socialite because
-     * that package is not installed in this Laravel application.
+     * Google authentication prefers an OpenID Connect ID token whose
+     * audience is the configured Web OAuth client. Access-token validation
+     * remains available for older clients and is restricted to the known
+     * Web/Android OAuth client IDs.
      */
     public function handleProviderToken(Request $request, $provider)
     {
@@ -87,7 +88,12 @@ class SocialAuthController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'access_token' => 'required|string',
+            'access_token' => $provider === 'facebook'
+                ? 'required|string'
+                : 'nullable|string|required_without:id_token',
+            'id_token' => $provider === 'google'
+                ? 'nullable|string|required_without:access_token'
+                : 'nullable|string',
             'mobile' => 'nullable|string|max:30',
             'country_code' => 'nullable|string|max:10',
             'fcm_id' => 'nullable|string',
@@ -98,9 +104,13 @@ class SocialAuthController extends Controller
         }
 
         try {
-            $providerUser = $provider === 'facebook'
-                ? $this->facebookUserFromToken($request->access_token)
-                : $this->googleUserFromToken($request->access_token);
+            if ($provider === 'facebook') {
+                $providerUser = $this->facebookUserFromToken($request->access_token);
+            } elseif ($request->filled('id_token')) {
+                $providerUser = $this->googleUserFromIdToken($request->id_token);
+            } else {
+                $providerUser = $this->googleUserFromAccessToken($request->access_token);
+            }
         } catch (\Throwable $e) {
             \Log::error('Social token verification failed [' . $provider . ']: ' . $e->getMessage());
             return $this->errorResponse('تعذر التحقق من حساب ' . ucfirst($provider) . '.', 400);
@@ -166,10 +176,10 @@ class SocialAuthController extends Controller
     }
 
     /**
-     * Validate a Google access token against the configured Web client, then
-     * fetch the user's OpenID profile.
+     * Verify the Google OpenID Connect ID token returned by the mobile app.
+     * The ID token must be issued for our Web OAuth client (serverClientId).
      */
-    protected function googleUserFromToken(string $accessToken): array
+    protected function googleUserFromIdToken(string $idToken): array
     {
         $clientId = (string) config('services.google.client_id');
         if ($clientId === '') {
@@ -177,20 +187,76 @@ class SocialAuthController extends Controller
         }
 
         $tokenInfoResponse = Http::timeout(12)->get('https://oauth2.googleapis.com/tokeninfo', [
+            'id_token' => $idToken,
+        ]);
+
+        if (!$tokenInfoResponse->successful()) {
+            throw new \RuntimeException('Google ID token validation failed.');
+        }
+
+        $tokenInfo = $tokenInfoResponse->json();
+        if (!is_array($tokenInfo)) {
+            throw new \RuntimeException('Google ID token response is invalid.');
+        }
+
+        $audience = (string) ($tokenInfo['aud'] ?? '');
+        if ($audience === '' || !hash_equals($clientId, $audience)) {
+            throw new \RuntimeException('Google ID token belongs to another client.');
+        }
+
+        $issuer = (string) ($tokenInfo['iss'] ?? '');
+        if (!in_array($issuer, ['accounts.google.com', 'https://accounts.google.com'], true)) {
+            throw new \RuntimeException('Google ID token issuer is invalid.');
+        }
+
+        if (empty($tokenInfo['sub'])) {
+            throw new \RuntimeException('Google ID token is missing the user id.');
+        }
+
+        return [
+            'id' => (string) $tokenInfo['sub'],
+            'name' => $tokenInfo['name'] ?? null,
+            'email' => $tokenInfo['email'] ?? null,
+            'nickname' => null,
+        ];
+    }
+
+    /**
+     * Compatibility path for older app builds that only send a Google access
+     * token. The token must have been issued to one of our known OAuth clients.
+     */
+    protected function googleUserFromAccessToken(string $accessToken): array
+    {
+        $webClientId = (string) config('services.google.client_id');
+        $androidClientId = (string) config('services.google.android_client_id');
+        $allowedClientIds = array_values(array_filter([$webClientId, $androidClientId]));
+
+        if (empty($allowedClientIds)) {
+            throw new \RuntimeException('Google backend client ids are missing.');
+        }
+
+        $tokenInfoResponse = Http::timeout(12)->get('https://oauth2.googleapis.com/tokeninfo', [
             'access_token' => $accessToken,
         ]);
 
         if (!$tokenInfoResponse->successful()) {
-            throw new \RuntimeException('Google token validation failed.');
+            throw new \RuntimeException('Google access token validation failed.');
         }
 
         $tokenInfo = $tokenInfoResponse->json();
-        $audience = is_array($tokenInfo)
-            ? (string) ($tokenInfo['aud'] ?? $tokenInfo['audience'] ?? '')
-            : '';
+        if (!is_array($tokenInfo)) {
+            throw new \RuntimeException('Google access token response is invalid.');
+        }
 
-        if ($audience === '' || $audience !== $clientId) {
-            throw new \RuntimeException('Google token belongs to another client.');
+        $issuedTo = (string) (
+            $tokenInfo['issued_to']
+            ?? $tokenInfo['audience']
+            ?? $tokenInfo['aud']
+            ?? ''
+        );
+
+        if ($issuedTo === '' || !in_array($issuedTo, $allowedClientIds, true)) {
+            throw new \RuntimeException('Google access token belongs to another client.');
         }
 
         $profileResponse = Http::timeout(12)
