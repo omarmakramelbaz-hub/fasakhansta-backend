@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -18,6 +19,60 @@ class Resturant extends Model implements HasMedia
     protected static function booted()
     {
         static::addGlobalScope(new ResturantScope);
+    }
+
+    /**
+     * Check the branch schedule using the application timezone.
+     * Supports normal schedules (09:00 -> 23:00) and overnight
+     * schedules (18:00 -> 02:00). Missing/equal times are treated
+     * as unrestricted so existing branches are not closed by mistake.
+     */
+    public function isWithinBusinessHours(): bool
+    {
+        if (empty($this->open_at) || empty($this->close_at)) {
+            return true;
+        }
+
+        $timezone = config('app.timezone', 'Africa/Cairo');
+
+        try {
+            $now = Carbon::now($timezone)->format('H:i:s');
+            $open = Carbon::parse($this->open_at, $timezone)->format('H:i:s');
+            $close = Carbon::parse($this->close_at, $timezone)->format('H:i:s');
+        } catch (\Throwable $e) {
+            // Do not unexpectedly hide a branch if an old record has
+            // an invalid time value; the stored manual status still applies.
+            return true;
+        }
+
+        // Same opening/closing time is treated as 24 hours.
+        if ($open === $close) {
+            return true;
+        }
+
+        // Same-day schedule, e.g. 09:00 -> 23:00.
+        if ($open < $close) {
+            return $now >= $open && $now < $close;
+        }
+
+        // Overnight schedule, e.g. 18:00 -> 02:00.
+        return $now >= $open || $now < $close;
+    }
+
+    /**
+     * Status exposed to customer/vendor APIs.
+     * Manual hide/closed states remain authoritative. Opened/busy branches
+     * are automatically exposed as closed outside their configured hours.
+     */
+    public function getEffectiveStatusAttribute()
+    {
+        $status = $this->attributes['status'] ?? null;
+
+        if (in_array($status, ['opened', 'busy'], true) && !$this->isWithinBusinessHours()) {
+            return 'closed';
+        }
+
+        return $status;
     }
 
     public function admin() {
