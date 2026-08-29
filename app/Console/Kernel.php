@@ -37,7 +37,9 @@ class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('notify:coupon')->daily();
+        // Check every minute so the home screen can switch to the winner state
+        // as soon as an ended competition becomes eligible for the draw.
+        $schedule->command('notify:coupon')->everyMinute();
         $schedule->command('notify:schedule')->daily();
         $schedule->command('notify:delete')->daily();
         $schedule->command('notify:percentage')->everyMinute();
