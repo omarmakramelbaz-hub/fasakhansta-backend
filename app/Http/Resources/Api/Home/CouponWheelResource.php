@@ -3,9 +3,7 @@
 namespace App\Http\Resources\Api\Home;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Http\Resources\Api\ResturantResource;
-use App\Models\Area;
-// use App\Models\CouponWheelResturant;
+use App\Models\Order;
 
 class CouponWheelResource extends JsonResource
 {
@@ -14,14 +12,33 @@ class CouponWheelResource extends JsonResource
         $latitude = $request->input('lat');
         $longitude = $request->input('lng');
 
+        $eligibleOrdersCount = 0;
+        $eligibleOrdersTotal = 0;
+
+        if (auth('api')->check()) {
+            $eligibleOrders = Order::where('user_id', auth('api')->id())
+                ->where('coupon_wheel_id', $this->id)
+                ->where('type', 'current')
+                ->where('status', 'completed')
+                ->get();
+
+            $eligibleOrdersCount = $eligibleOrders->count();
+            $eligibleOrdersTotal = round($eligibleOrders->sum(function ($order) {
+                return (float) $order->updated_total;
+            }), 2);
+        }
+
         return [
             'id' => $this->id,
             'name' => $this->name,
             'price' => $this->price,
+            'prize_amount' => $this->prize_amount,
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
             'status' => $this->status,
             'image' => $this->getFirstMediaUrl('coupon_wheel_image', 'thumb'),
+            'eligible_orders_count' => $eligibleOrdersCount,
+            'eligible_orders_total' => $eligibleOrdersTotal,
             'resturants' => CouponWheelResturant::collection(
                 $this->resturants()->with('resturant.resturant_areas')->get()->filter(function ($item) use ($latitude, $longitude) {
                     if (empty($latitude) || empty($longitude)) {
@@ -57,7 +74,7 @@ class CouponWheelResource extends JsonResource
 
     private function calculateDistance($lat1, $lng1, $lat2, $lng2)
     {
-        $earthRadius = 6371; // Earth's radius in kilometers
+        $earthRadius = 6371;
 
         $lat1 = deg2rad($lat1);
         $lng1 = deg2rad($lng1);
@@ -73,8 +90,6 @@ class CouponWheelResource extends JsonResource
 
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
-        $distance = $earthRadius * $c;
-
-        return $distance;
+        return $earthRadius * $c;
     }
 }
