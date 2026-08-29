@@ -9,8 +9,15 @@
 
 <div class="form-group col-sm-6">
     <label for="price"> @lang('main.wheel price')</label>
-    <input type="number" min="1" name="price" value="{{ old('price', $coupon_wheel->price) }}"
+    <input type="number" min="1" step="0.01" name="price" value="{{ old('price', $coupon_wheel->price) }}"
         class="form-control @error('price') is-invalid @enderror" id="price" placeholder="@lang('main.Enter') @lang('main.wheel price')">
+    <small class="text-muted">الحد الأدنى لقيمة الطلب المؤهل للمسابقة</small>
+</div>
+
+<div class="form-group col-sm-6">
+    <label for="prize_amount">قيمة الجائزة</label>
+    <input type="number" min="0" step="0.01" name="prize_amount" value="{{ old('prize_amount', $coupon_wheel->prize_amount) }}"
+        class="form-control @error('prize_amount') is-invalid @enderror" id="prize_amount" placeholder="أدخل قيمة الجائزة">
 </div>
 
 <div class="form-group col-sm-6">
@@ -41,8 +48,6 @@
                   </select>
  </div>
 
-
-
 <h5 class="name p-3">@lang('main.upload images') </h5>
 
 <div class="upload-wrapper mb-4">
@@ -52,7 +57,7 @@
               <div>
                   <label class="upload__btn d-inline-block">
                       <input type="file" accept="image/*" name="images"
-                          data-max_length="20" 
+                          data-max_length="20"
                           class="upload__inputfile">
                   </label>
 
@@ -70,13 +75,12 @@
                                                 'id' => $coupon_wheel->id,
                                             ])
                                     </div>
-                            
+
                         @endif
                 </div>
         </div>
     </div>
 </div>
-
 
 </div>
 <div class="form-group col-sm-10">
