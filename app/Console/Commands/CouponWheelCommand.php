@@ -8,76 +8,98 @@ use App\Models\CouponWheel;
 use App\Models\User;
 use App\Models\Order;
 use App\Models\CouponSubscripe;
-// use Mail;
 use Notification;
-// use App\Mail\VendorEmail;
 use App\Events\CouponWheelUpdated;
+use Illuminate\Support\Str;
+
 class CouponWheelCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'notify:coupon';
+    protected $description = 'Select and notify the competition winner';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'send email for wheel coupon subscription winner ';
-
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    /**
-     * Execute the console command.
-     *
-     * @return int
-     */
     public function handle()
     {
-         \Log::info("Coupon Cron is working fine!");
+        \Log::info('Coupon Cron is working fine!');
 
-        $coupon = CouponWheel::whereDate('end_date', Carbon::now()->subDay())->first();
-         \Log::info("Coupon Cron is working fine!".Carbon::now()->subDay());
-           if($coupon){
-                \Log::info("coupon:".$coupon->id);
-                $order=Order::where('coupon_wheel_id',$coupon->id)->inRandomOrder()->first();
-            //   $winner=CouponSubscripe::whereNull('status')->inRandomOrder()->first();
-              broadcast(new CouponWheelUpdated($coupon))->toOthers();
-                if($order){
-                   $winner=CouponSubscripe::where('coupon_wheel_id',$order->coupon_wheel_id)->where('user_id',$order->user_id)->first();
-                   if($winner){
-                    $winner->update(['status'=>'winner']);
-                    // send notification to user winner
-                    $user_winner = User::where('id',$winner->user_id)->first();
-                    if($user_winner){
-                        Notification::send($user_winner,new \App\Notifications\NotifyUserCouponWheelWinnerNotification($winner));
-                    }
-                 
-                   }else{
-                       $coupon->update(['status'=>'hide']);
-                   }
-                 \Log::info("winner:".$winner->id);
-                   $lossers=CouponSubscripe::where('coupon_wheel_id',$order->coupon_wheel_id)->whereNull('status')->get();
-                    foreach($lossers as $loser){
-                        $loser->update(['status'=>'loser']);
-                    }
-                }
-                
-                
-                
-            }
+        $coupon = CouponWheel::where('status', 'show')
+            ->whereDate('end_date', Carbon::now()->subDay()->toDateString())
+            ->first();
 
-//        return 0;
+        if (!$coupon) {
+            return 0;
+        }
+
+        // Never select the same competition twice.
+        if (CouponSubscripe::where('coupon_wheel_id', $coupon->id)->where('status', 'winner')->exists()) {
+            return 0;
+        }
+
+        // Every qualifying completed order is one independent chance in the draw.
+        $winnerOrder = Order::where('coupon_wheel_id', $coupon->id)
+            ->where('type', 'current')
+            ->where('status', 'completed')
+            ->inRandomOrder()
+            ->first();
+
+        broadcast(new CouponWheelUpdated($coupon))->toOthers();
+
+        if (!$winnerOrder) {
+            \Log::info('No qualifying orders for coupon: '.$coupon->id);
+            return 0;
+        }
+
+        $winner = CouponSubscripe::where('coupon_wheel_id', $coupon->id)
+            ->where('user_id', $winnerOrder->user_id)
+            ->where('amount', 1)
+            ->whereNull('status')
+            ->inRandomOrder()
+            ->first();
+
+        // Backward-compatible fallback for qualifying orders created before the fix.
+        if (!$winner) {
+            $winner = CouponSubscripe::where('coupon_wheel_id', $coupon->id)
+                ->where('user_id', $winnerOrder->user_id)
+                ->whereNull('status')
+                ->first();
+        }
+
+        if (!$winner) {
+            $winner = CouponSubscripe::create([
+                'user_id' => $winnerOrder->user_id,
+                'user_coupon_code' => $this->generateUniqueCode(),
+                'coupon_wheel_id' => $coupon->id,
+                'price' => (float) $winnerOrder->updated_total,
+                'amount' => 1,
+                'status' => null,
+            ]);
+        }
+
+        $winner->update(['status' => 'winner']);
+
+        $userWinner = User::find($winner->user_id);
+        if ($userWinner) {
+            Notification::send(
+                $userWinner,
+                new \App\Notifications\NotifyUserCouponWheelWinnerNotification($winner)
+            );
+        }
+
+        CouponSubscripe::where('coupon_wheel_id', $coupon->id)
+            ->where('id', '!=', $winner->id)
+            ->whereNull('status')
+            ->update(['status' => 'loser']);
+
+        \Log::info('winner:'.$winner->id.' coupon:'.$coupon->id.' order:'.$winnerOrder->id);
+
+        return 0;
+    }
+
+    private function generateUniqueCode($length = 10)
+    {
+        do {
+            $code = Str::upper(Str::random($length));
+        } while (CouponSubscripe::where('user_coupon_code', $code)->exists());
+
+        return $code;
     }
 }
