@@ -9,8 +9,8 @@ return [
     |
     | This file is for storing the credentials for third party services such
     | as Mailgun, Postmark, AWS and more. This file provides the de facto
-    | location for this type of information, allowing packages to have
-    | a conventional file to locate the various service credentials.
+    | location for this type of information, allowing packages to have a
+    | conventional file to locate this information.
     |
     */
 
@@ -34,7 +34,17 @@ return [
     ],
 
     'google' => [
-        'client_id' => env('GOOGLE_CLIENT_ID'),
+        // Public OAuth client IDs. Environment values can override these,
+        // while the defaults keep production and APK verification aligned
+        // with the Firebase project used by the customer app.
+        'client_id' => env(
+            'GOOGLE_CLIENT_ID',
+            '224648167390-efdtr7rjcnept7eiml1d642sdn8n9ki7.apps.googleusercontent.com'
+        ),
+        'android_client_id' => env(
+            'GOOGLE_ANDROID_CLIENT_ID',
+            '224648167390-d4fc6jflatn61r66guemktla3itbsqum.apps.googleusercontent.com'
+        ),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('APP_URL') . '/api/auth/social/google/callback',
     ],
