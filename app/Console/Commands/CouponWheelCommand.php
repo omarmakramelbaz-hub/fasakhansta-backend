@@ -21,16 +21,19 @@ class CouponWheelCommand extends Command
     {
         \Log::info('Coupon Cron is working fine!');
 
+        $finishedCouponIds = CouponSubscripe::where('status', 'winner')
+            ->whereNotNull('coupon_wheel_id')
+            ->pluck('coupon_wheel_id');
+
         $coupon = CouponWheel::where('status', 'show')
-            ->whereDate('end_date', Carbon::now()->subDay()->toDateString())
+            ->whereDate('end_date', '<', Carbon::now()->toDateString())
+            ->when($finishedCouponIds->isNotEmpty(), function ($query) use ($finishedCouponIds) {
+                $query->whereNotIn('id', $finishedCouponIds);
+            })
+            ->orderBy('end_date')
             ->first();
 
         if (!$coupon) {
-            return 0;
-        }
-
-        // Never select the same competition twice.
-        if (CouponSubscripe::where('coupon_wheel_id', $coupon->id)->where('status', 'winner')->exists()) {
             return 0;
         }
 
@@ -40,8 +43,6 @@ class CouponWheelCommand extends Command
             ->where('status', 'completed')
             ->inRandomOrder()
             ->first();
-
-        broadcast(new CouponWheelUpdated($coupon))->toOthers();
 
         if (!$winnerOrder) {
             \Log::info('No qualifying orders for coupon: '.$coupon->id);
@@ -76,6 +77,11 @@ class CouponWheelCommand extends Command
 
         $winner->update(['status' => 'winner']);
 
+        CouponSubscripe::where('coupon_wheel_id', $coupon->id)
+            ->where('id', '!=', $winner->id)
+            ->whereNull('status')
+            ->update(['status' => 'loser']);
+
         $userWinner = User::find($winner->user_id);
         if ($userWinner) {
             Notification::send(
@@ -84,10 +90,8 @@ class CouponWheelCommand extends Command
             );
         }
 
-        CouponSubscripe::where('coupon_wheel_id', $coupon->id)
-            ->where('id', '!=', $winner->id)
-            ->whereNull('status')
-            ->update(['status' => 'loser']);
+        // Home screens refresh only after the winner is persisted.
+        broadcast(new CouponWheelUpdated($coupon))->toOthers();
 
         \Log::info('winner:'.$winner->id.' coupon:'.$coupon->id.' order:'.$winnerOrder->id);
 
