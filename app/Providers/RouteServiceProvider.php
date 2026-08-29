@@ -33,6 +33,13 @@ class RouteServiceProvider extends ServiceProvider
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
 
+            // Registered after api.php so this route safely overrides the
+            // legacy customer cancellation handler without disturbing the
+            // rest of the existing API routes.
+            Route::middleware('api')
+                ->prefix('api')
+                ->group(base_path('routes/api_cancel.php'));
+
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
             Route::middleware('web')
