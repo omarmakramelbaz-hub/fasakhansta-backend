@@ -15,7 +15,7 @@ class ResturantResource extends JsonResource
             'vendor_email'               => $this->user?->email,
             'name'                      => $this->name,
                 // 'status'                    =>  $this->resturant_products->count()==0?'closed':$this->status,
-            'status'                    => $this->status,
+            'status'                    => $this->effective_status,
             'avg_rate'                  => (double) $this->avg_rate,
             'address'                   => $this->address,
             'logo'                      => $this->getFirstMediaUrl('logo','thumb'),
