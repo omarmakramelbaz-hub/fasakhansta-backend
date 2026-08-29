@@ -6,21 +6,11 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreCouponWheelRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
     public function authorize()
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
     public function rules()
     {
         return [
@@ -31,9 +21,8 @@ class StoreCouponWheelRequest extends FormRequest
             'start_date'=>'required|date',
             'end_date'=>'required|date|after:start_date',
             'price'=>'required|numeric|min:1',
-            
-            
-        ]  
+            'prize_amount'=>'nullable|numeric|min:0',
+        ]
         +
          ($this->isMethod('POST') ? $this->store() : $this->update());
     }
@@ -42,7 +31,6 @@ class StoreCouponWheelRequest extends FormRequest
     {
          return [
             'images'=>'required|image|mimes:png,jpeg,jpg,webp',
-
          ];
     }
 
@@ -50,7 +38,6 @@ class StoreCouponWheelRequest extends FormRequest
     {
          return [
             'images' => 'nullable|image|mimes:png,jpeg,jpg,webp',
-
          ];
     }
 }
