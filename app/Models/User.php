@@ -61,6 +61,15 @@ class User extends Authenticatable implements JWTSubject, HasMedia{
         return mt_rand(1111, 9999);
     }
 
+    /**
+     * First-order OTP verification is disabled.
+     * Returning 1 makes checkout continue directly to order creation.
+     */
+    public function getOtpFirstOrderAttribute($value)
+    {
+        return 1;
+    }
+
 	public function setPasswordAttribute($password)
     {
         if ($password) {
