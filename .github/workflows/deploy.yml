@@ -44,3 +44,27 @@ jobs:
             -o BatchMode=yes \
             -o ConnectTimeout=20 \
             root@187.127.92.124
+
+      - name: Check delegate API reachability
+        shell: bash
+        run: |
+          set +e
+          echo "=== Public DNS ==="
+          getent ahostsv4 fasakhaninja.com || true
+          echo "=== Public /api/profile ==="
+          curl -sS -o /tmp/profile-public.out \
+            -w 'HTTP %{http_code} DNS %{time_namelookup}s CONNECT %{time_connect}s TOTAL %{time_total}s\n' \
+            --connect-timeout 8 --max-time 15 \
+            -H 'Accept: application/json' \
+            https://fasakhaninja.com/api/profile || true
+          head -c 300 /tmp/profile-public.out 2>/dev/null || true
+          echo
+          echo "=== Direct VPS /api/profile with production host ==="
+          curl -k -sS -o /tmp/profile-direct.out \
+            -w 'HTTP %{http_code} CONNECT %{time_connect}s TOTAL %{time_total}s\n' \
+            --connect-timeout 8 --max-time 15 \
+            --resolve fasakhaninja.com:443:187.127.92.124 \
+            -H 'Accept: application/json' \
+            https://fasakhaninja.com/api/profile || true
+          head -c 300 /tmp/profile-direct.out 2>/dev/null || true
+          echo
