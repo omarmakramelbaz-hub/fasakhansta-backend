@@ -65,7 +65,6 @@ class MetaConversionsService
             $response = Http::withToken($accessToken)
                 ->asJson()
                 ->timeout(4)
-                ->retry(2, 200)
                 ->post($url, $payload);
 
             if ($response->failed()) {
@@ -73,6 +72,7 @@ class MetaConversionsService
                     'order_id' => $order->id,
                     'status' => $response->status(),
                     'response' => $response->json(),
+                    'body' => $response->body(),
                 ]);
                 return;
             }
