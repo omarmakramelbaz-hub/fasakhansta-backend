@@ -48,7 +48,6 @@ class MetaConversionsService
                             config('services.meta_conversions.application_tracking_enabled', false),
                             FILTER_VALIDATE_BOOLEAN
                         ),
-                        'extinfo' => $this->buildExtInfo(),
                     ],
                 ],
             ],
@@ -144,34 +143,5 @@ class MetaConversionsService
         }
 
         return $digits;
-    }
-
-    private function buildExtInfo(): array
-    {
-        $platform = strtolower((string) config('services.meta_conversions.app_platform', 'android'));
-        $isIos = $platform === 'ios';
-
-        $packageName = $isIos
-            ? (string) config('services.meta_conversions.ios_bundle_id', 'com.faskhaninja.clients')
-            : (string) config('services.meta_conversions.android_package', 'com.smartvision.faskhanista');
-
-        return [
-            $isIos ? 'i2' : 'a2',
-            $packageName,
-            (string) config('services.meta_conversions.app_version', ''),
-            (string) config('services.meta_conversions.app_build', ''),
-            '',
-            '',
-            (string) config('services.meta_conversions.app_locale', 'ar_EG'),
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            (string) config('services.meta_conversions.app_timezone', 'Africa/Cairo'),
-        ];
     }
 }
