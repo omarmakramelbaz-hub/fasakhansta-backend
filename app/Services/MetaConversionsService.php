@@ -39,16 +39,6 @@ class MetaConversionsService
                         'value' => (float) $order->grand_total,
                         'order_id' => (string) $order->id,
                     ],
-                    'app_data' => [
-                        'advertiser_tracking_enabled' => filter_var(
-                            config('services.meta_conversions.advertiser_tracking_enabled', false),
-                            FILTER_VALIDATE_BOOLEAN
-                        ),
-                        'application_tracking_enabled' => filter_var(
-                            config('services.meta_conversions.application_tracking_enabled', false),
-                            FILTER_VALIDATE_BOOLEAN
-                        ),
-                    ],
                 ],
             ],
         ];
