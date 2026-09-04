@@ -32,7 +32,7 @@ class MetaConversionsService
                     'event_name' => 'Purchase',
                     'event_time' => now()->timestamp,
                     'event_id' => 'purchase_order_' . $order->id,
-                    'action_source' => 'app',
+                    'action_source' => 'other',
                     'user_data' => $this->buildUserData($order),
                     'custom_data' => [
                         'currency' => (string) config('services.meta_conversions.currency', 'EGP'),
