@@ -34,9 +34,6 @@ return [
     ],
 
     'google' => [
-        // Public OAuth client IDs. Environment values can override these,
-        // while the defaults keep production and APK verification aligned
-        // with the Firebase project used by the customer app.
         'client_id' => env(
             'GOOGLE_CLIENT_ID',
             '224648167390-efdtr7rjcnept7eiml1d642sdn8n9ki7.apps.googleusercontent.com'
@@ -53,6 +50,24 @@ return [
         'client_id' => env('FACEBOOK_CLIENT_ID'),
         'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
         'redirect' => env('APP_URL') . '/api/auth/social/facebook/callback',
+    ],
+
+    'meta_conversions' => [
+        'enabled' => env('META_CONVERSIONS_ENABLED', false),
+        'dataset_id' => env('META_DATASET_ID'),
+        'access_token' => env('META_ACCESS_TOKEN'),
+        'api_version' => env('META_GRAPH_API_VERSION', 'v24.0'),
+        'currency' => env('META_CURRENCY', 'EGP'),
+        'app_platform' => env('META_APP_PLATFORM', 'android'),
+        'android_package' => env('META_ANDROID_PACKAGE', 'com.smartvision.faskhanista'),
+        'ios_bundle_id' => env('META_IOS_BUNDLE_ID', 'com.faskhaninja.clients'),
+        'app_version' => env('META_APP_VERSION', ''),
+        'app_build' => env('META_APP_BUILD', ''),
+        'app_locale' => env('META_APP_LOCALE', 'ar_EG'),
+        'app_timezone' => env('META_APP_TIMEZONE', 'Africa/Cairo'),
+        'advertiser_tracking_enabled' => env('META_ADVERTISER_TRACKING_ENABLED', false),
+        'application_tracking_enabled' => env('META_APPLICATION_TRACKING_ENABLED', false),
+        'test_event_code' => env('META_TEST_EVENT_CODE'),
     ],
 
 ];
