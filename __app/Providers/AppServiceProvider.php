@@ -44,8 +44,10 @@ use App\Repositories\BannerRepository;
 
 use App\Interfaces\FeatureRepositoryInterface;
 use App\Repositories\FeatureRepository;
-    use App\Models\User;
+use App\Models\User;
+use App\Models\Order;
 use App\Observers\UserObserver;
+use App\Observers\OrderObserver;
 use App\Observers\NotificationObserver;
 use App\Models\Notification;
 use Illuminate\Notifications\DatabaseNotification;
@@ -85,8 +87,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Paginator::useBootstrap();
-    User::observe(UserObserver::class);
-    DatabaseNotification::observe(NotificationObserver::class);
+        User::observe(UserObserver::class);
+        Order::observe(OrderObserver::class);
+        DatabaseNotification::observe(NotificationObserver::class);
 
         view()->composer('*', function ($view)
         {
