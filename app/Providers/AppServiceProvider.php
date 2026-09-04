@@ -25,7 +25,8 @@ use App\Repositories\ResturantProductRepository;
 
 use App\Interfaces\ResturantRepositoryInterface;
 use App\Repositories\ResturantRepository;
-use App\Interfaces\CategoryTypeEnum;
+use App\Interfaces\CategoryTypeRepositoryInterface;
+use App\Repositories\CategoryTypeRepository;
 
 use App\Interfaces\CategoryRepositoryInterface;
 use App\Repositories\CategoryRepository;
@@ -64,7 +65,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ResturantRepositoryInterface::class, ResturantRepository::class);
         $this->app->bind(ResturantProductRepositoryInterface::class, ResturantProductRepository::class);
         $this->app->bind(TicketRepositoryInterface::class, TicketRepository::class);
-        $this->app->bind(CategoryTypeEnum::class, CategoryTypeEnum::class);
+        $this->app->bind(CategoryTypeRepositoryInterface::class, CategoryTypeRepository::class);
         $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
         $this->app->bind(ServiceRepositoryInterface::class, ServiceRepository::class);
         $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
