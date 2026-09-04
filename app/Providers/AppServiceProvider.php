@@ -48,6 +48,7 @@ use App\Models\User;
 use App\Models\Order;
 use App\Observers\UserObserver;
 use App\Observers\OrderCompetitionObserver;
+use App\Observers\OrderMetaConversionObserver;
 use App\Observers\NotificationObserver;
 use Illuminate\Notifications\DatabaseNotification;
 
@@ -78,6 +79,7 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrap();
         User::observe(UserObserver::class);
         Order::observe(OrderCompetitionObserver::class);
+        Order::observe(OrderMetaConversionObserver::class);
         DatabaseNotification::observe(NotificationObserver::class);
 
         view()->composer('*', function ($view)
