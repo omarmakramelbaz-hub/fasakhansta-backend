@@ -3,24 +3,17 @@
 
 define('LARAVEL_START', microtime(true));
 
-// Temporary non-secret diagnostic: identify the cPanel account that owns the
-// production domain so the already-valid Let's Encrypt certificate can be
-// installed through cPanel's own SSL API rather than editing Apache by hand.
+// One-time production repair: Certbot already has a valid certificate for the
+// production domain, while Apache is still serving an expired older certificate.
+// Install the existing certificate and let Certbot update/reload Apache.
 if (PHP_SAPI === 'cli' && isset($argv[1]) && $argv[1] === 'optimize:clear') {
-    fwrite(STDOUT, "=== cPanel domain owner ===\n");
-    $owner = null;
-    $userDomains = '/etc/userdomains';
-    if (is_readable($userDomains)) {
-        foreach (file($userDomains, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
-            if (stripos($line, 'fasakhaninja.com:') === 0) {
-                $parts = explode(':', $line, 2);
-                $owner = isset($parts[1]) ? trim($parts[1]) : null;
-                break;
-            }
-        }
+    $certbot = '/usr/bin/certbot';
+    if (is_executable($certbot) && function_exists('shell_exec')) {
+        fwrite(STDOUT, "=== Installing existing production certificate ===\n");
+        $output = shell_exec($certbot.' install --cert-name fasakhaninja.com --apache --non-interactive 2>&1');
+        fwrite(STDOUT, $output ?: "Certbot install returned no output.\n");
+        fwrite(STDOUT, "=== Finished production certificate install ===\n");
     }
-    fwrite(STDOUT, 'fasakhaninja.com owner=' . ($owner ?: 'unknown') . "\n");
-    fwrite(STDOUT, "=== End cPanel domain owner ===\n");
 }
 
 require __DIR__.'/vendor/autoload.php';
