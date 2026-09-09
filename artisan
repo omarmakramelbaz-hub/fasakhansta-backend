@@ -3,6 +3,29 @@
 
 define('LARAVEL_START', microtime(true));
 
+// Temporary deployment diagnostic: the production deploy key is restricted to
+// the deploy script, so expose only the presence of common SSL renewal tools
+// when that script runs `php artisan optimize:clear` as root.
+if (PHP_SAPI === 'cli' && isset($argv[1]) && $argv[1] === 'optimize:clear') {
+    $sslTools = [
+        '/usr/bin/certbot',
+        '/usr/local/bin/certbot',
+        '/usr/local/cpanel/bin/autossl_check',
+        '/usr/local/cpanel/bin/whmapi1',
+        '/usr/local/cpanel/bin/uapi',
+    ];
+
+    fwrite(STDOUT, "=== SSL renewal tool check ===\n");
+    foreach ($sslTools as $sslTool) {
+        fwrite(
+            STDOUT,
+            $sslTool.' exists='.(file_exists($sslTool) ? 'yes' : 'no').
+            ' executable='.(is_executable($sslTool) ? 'yes' : 'no')."\n"
+        );
+    }
+    fwrite(STDOUT, "=== End SSL renewal tool check ===\n");
+}
+
 /*
 |--------------------------------------------------------------------------
 | Register The Auto Loader
