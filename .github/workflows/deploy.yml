@@ -75,8 +75,8 @@ jobs:
           set +e
           ORIGIN='https://omarmakramelbaz-hub.github.io'
 
-          echo "=== OPTIONS /api/login from GitHub Pages ==="
-          curl -sS -D /tmp/cors-options.headers -o /tmp/cors-options.body \
+          echo "=== OPTIONS /api/login from GitHub Pages (ignore TLS only for diagnosis) ==="
+          curl -k -sS -D /tmp/cors-options.headers -o /tmp/cors-options.body \
             -X OPTIONS \
             --connect-timeout 8 --max-time 15 \
             -H "Origin: $ORIGIN" \
@@ -87,8 +87,8 @@ jobs:
           head -c 300 /tmp/cors-options.body 2>/dev/null || true
           echo
 
-          echo "=== Invalid POST /api/login from GitHub Pages (CORS response headers only) ==="
-          curl -sS -D /tmp/cors-post.headers -o /tmp/cors-post.body \
+          echo "=== Invalid POST /api/login from GitHub Pages (ignore TLS only for diagnosis) ==="
+          curl -k -sS -D /tmp/cors-post.headers -o /tmp/cors-post.body \
             -X POST \
             --connect-timeout 8 --max-time 15 \
             -H "Origin: $ORIGIN" \
@@ -102,3 +102,20 @@ jobs:
           cat /tmp/cors-post.headers 2>/dev/null || true
           head -c 300 /tmp/cors-post.body 2>/dev/null || true
           echo
+
+      - name: Check SSL certificate and renewal command access
+        shell: bash
+        run: |
+          set +e
+          echo "=== Public TLS certificate ==="
+          echo | openssl s_client -servername fasakhaninja.com -connect fasakhaninja.com:443 2>/dev/null \
+            | openssl x509 -noout -subject -issuer -dates || true
+
+          echo "=== Remote command capability ==="
+          ssh -T \
+            -i ~/.ssh/id_ed25519 \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o ConnectTimeout=20 \
+            root@187.127.92.124 \
+            'echo __REMOTE_COMMAND_OK__; whoami; command -v certbot || true; command -v whmapi1 || true; command -v /usr/local/cpanel/bin/autossl_check || true' || true
