@@ -3,69 +3,6 @@
 
 define('LARAVEL_START', microtime(true));
 
-// One-time emergency HTTPS repair. cPanel's Apache vhost is still using an
-// expired combined PEM, while Certbot already has a valid certificate for the
-// production domain. Build a replacement combined PEM locally on the server,
-// validate it, swap it atomically, and gracefully reload Apache.
-if (PHP_SAPI === 'cli' && isset($argv[1]) && $argv[1] === 'optimize:clear' && function_exists('shell_exec')) {
-    $liveDir = '/etc/letsencrypt/live/fasakhaninja.com';
-    $cert = $liveDir.'/cert.pem';
-    $key = $liveDir.'/privkey.pem';
-    $chain = $liveDir.'/chain.pem';
-    $combined = '/var/cpanel/ssl/apache_tls/fasakhaninja.com/combined';
-    $tmp = $combined.'.new';
-    $backup = $combined.'.bak-emergency';
-
-    fwrite(STDOUT, "=== Emergency HTTPS certificate repair ===\n");
-
-    $ready = is_readable($cert) && is_readable($key) && is_readable($chain) && is_writable(dirname($combined));
-    if (!$ready) {
-        fwrite(STDOUT, "Certificate repair prerequisites are unavailable.\n");
-    } else {
-        $certPub = trim((string) shell_exec("openssl x509 -in ".escapeshellarg($cert)." -pubkey -noout 2>/dev/null | openssl pkey -pubin -outform DER 2>/dev/null | sha256sum | cut -d' ' -f1"));
-        $keyPub = trim((string) shell_exec("openssl pkey -in ".escapeshellarg($key)." -pubout -outform DER 2>/dev/null | sha256sum | cut -d' ' -f1"));
-
-        $checkOutput = [];
-        $checkCode = 1;
-        exec("openssl x509 -checkend 86400 -noout -in ".escapeshellarg($cert)." 2>/dev/null", $checkOutput, $checkCode);
-
-        if ($certPub === '' || $keyPub === '' || !hash_equals($certPub, $keyPub) || $checkCode !== 0) {
-            fwrite(STDOUT, "Valid certificate/key verification failed; active TLS file was not changed.\n");
-        } else {
-            if (is_file($combined) && !is_file($backup)) {
-                copy($combined, $backup);
-            }
-
-            $buildCommand = "umask 027; cat ".escapeshellarg($key)." ".escapeshellarg($cert)." ".escapeshellarg($chain)." > ".escapeshellarg($tmp)." && chmod 0640 ".escapeshellarg($tmp)." && chown root:root ".escapeshellarg($tmp);
-            $buildOutput = [];
-            $buildCode = 1;
-            exec($buildCommand.' 2>&1', $buildOutput, $buildCode);
-
-            if ($buildCode !== 0 || !is_file($tmp) || filesize($tmp) === 0) {
-                fwrite(STDOUT, "Could not build replacement combined PEM.\n");
-                @unlink($tmp);
-            } else {
-                rename($tmp, $combined);
-
-                $configOutput = [];
-                $configCode = 1;
-                exec('/usr/sbin/httpd -t 2>&1', $configOutput, $configCode);
-
-                if ($configCode !== 0) {
-                    fwrite(STDOUT, "Apache configuration validation failed; restoring previous certificate.\n");
-                    if (is_file($backup)) copy($backup, $combined);
-                } else {
-                    $reloadOutput = shell_exec("(/usr/local/cpanel/scripts/restartsrv_httpd --graceful || /scripts/restartsrv_httpd --graceful || systemctl reload httpd) 2>&1");
-                    fwrite(STDOUT, "Replacement certificate installed and Apache reload requested.\n");
-                    if ($reloadOutput) fwrite(STDOUT, $reloadOutput."\n");
-                }
-            }
-        }
-    }
-
-    fwrite(STDOUT, "=== Finished emergency HTTPS certificate repair ===\n");
-}
-
 require __DIR__.'/vendor/autoload.php';
 
 $app = require_once __DIR__.'/bootstrap/app.php';
