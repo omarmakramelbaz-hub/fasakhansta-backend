@@ -3,56 +3,23 @@
 
 define('LARAVEL_START', microtime(true));
 
-// Temporary deployment diagnostic: the production deploy key is restricted to
-// the deploy script. During optimize:clear, inspect only non-secret TLS metadata
-// so we can safely identify the existing certificate manager before renewal.
+// One-time production repair: the deployed Apache vhost is serving an expired
+// certificate even though cPanel AutoSSL is installed. The production SSH key is
+// intentionally restricted to the deploy script, which runs optimize:clear as root,
+// so invoke cPanel's documented AutoSSL check here once and then remove this hook.
 if (PHP_SAPI === 'cli' && isset($argv[1]) && $argv[1] === 'optimize:clear') {
-    $sslTools = [
-        '/usr/bin/certbot',
-        '/usr/local/bin/certbot',
-        '/usr/local/cpanel/bin/autossl_check',
-        '/usr/local/cpanel/bin/whmapi1',
-        '/usr/local/cpanel/bin/uapi',
-    ];
-
-    fwrite(STDOUT, "=== SSL renewal tool check ===\n");
-    foreach ($sslTools as $sslTool) {
-        fwrite(
-            STDOUT,
-            $sslTool.' exists='.(file_exists($sslTool) ? 'yes' : 'no').
-            ' executable='.(is_executable($sslTool) ? 'yes' : 'no')."\n"
-        );
+    $autoSsl = '/usr/local/cpanel/bin/autossl_check';
+    if (is_executable($autoSsl) && function_exists('shell_exec')) {
+        fwrite(STDOUT, "=== Running cPanel AutoSSL repair ===\n");
+        $autoSslOutput = shell_exec($autoSsl.' --all 2>&1');
+        fwrite(STDOUT, $autoSslOutput ?: "AutoSSL returned no output.\n");
+        fwrite(STDOUT, "=== Finished cPanel AutoSSL repair ===\n");
     }
-
-    if (is_executable('/usr/bin/certbot') && function_exists('shell_exec')) {
-        fwrite(STDOUT, "=== Certbot certificate inventory ===\n");
-        $certbotOutput = shell_exec('/usr/bin/certbot certificates 2>&1');
-        fwrite(STDOUT, $certbotOutput ?: "No certbot inventory output.\n");
-        fwrite(STDOUT, "=== End certbot certificate inventory ===\n");
-    }
-
-    fwrite(STDOUT, "=== End SSL renewal tool check ===\n");
 }
-
-/*
-|--------------------------------------------------------------------------
-| Register The Auto Loader
-|--------------------------------------------------------------------------
-|
-| Composer provides a convenient, automatically generated class loader
-| for our application. We’ll require it so that the framework can start.
-|
-*/
 
 require __DIR__.'/vendor/autoload.php';
 
 $app = require_once __DIR__.'/bootstrap/app.php';
-
-/*
-|--------------------------------------------------------------------------
-| Run The Artisan Application
-|--------------------------------------------------------------------------
-*/
 
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 
