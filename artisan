@@ -3,16 +3,28 @@
 
 define('LARAVEL_START', microtime(true));
 
-// One-time production repair: Certbot already has a valid certificate for the
-// production domain, while Apache is still serving an expired older certificate.
-// Install the existing certificate and let Certbot update/reload Apache.
+// One-time production repair. The active cPanel SSL vhost is serving an expired
+// certificate. Temporarily allow AutoSSL to replace externally-issued expired
+// certificates, run AutoSSL only for this cPanel account, then restore the option.
 if (PHP_SAPI === 'cli' && isset($argv[1]) && $argv[1] === 'optimize:clear') {
-    $certbot = '/usr/bin/certbot';
-    if (is_executable($certbot) && function_exists('shell_exec')) {
-        fwrite(STDOUT, "=== Installing existing production certificate ===\n");
-        $output = shell_exec($certbot.' install --cert-name fasakhaninja.com --apache --non-interactive 2>&1');
-        fwrite(STDOUT, $output ?: "Certbot install returned no output.\n");
-        fwrite(STDOUT, "=== Finished production certificate install ===\n");
+    $whmapi = '/usr/local/cpanel/bin/whmapi1';
+    $autoSsl = '/usr/local/cpanel/bin/autossl_check';
+
+    if (is_executable($whmapi) && is_executable($autoSsl) && function_exists('shell_exec')) {
+        fwrite(STDOUT, "=== Forcing targeted AutoSSL repair ===\n");
+
+        $enable = shell_exec($whmapi." --output=json set_autossl_metadata_key key=clobber_externally_signed value=1 2>&1");
+        fwrite(STDOUT, "AutoSSL replacement option enabled.\n");
+        if ($enable) fwrite(STDOUT, $enable."\n");
+
+        $check = shell_exec($autoSsl." --user=fasakha 2>&1");
+        fwrite(STDOUT, $check ?: "Targeted AutoSSL check returned no output.\n");
+
+        $disable = shell_exec($whmapi." --output=json set_autossl_metadata_key key=clobber_externally_signed value=0 2>&1");
+        fwrite(STDOUT, "AutoSSL replacement option restored.\n");
+        if ($disable) fwrite(STDOUT, $disable."\n");
+
+        fwrite(STDOUT, "=== Finished targeted AutoSSL repair ===\n");
     }
 }
 
