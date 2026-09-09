@@ -68,3 +68,37 @@ jobs:
             https://fasakhaninja.com/api/profile || true
           head -c 300 /tmp/profile-direct.out 2>/dev/null || true
           echo
+
+      - name: Check GitHub Pages CORS for driver login
+        shell: bash
+        run: |
+          set +e
+          ORIGIN='https://omarmakramelbaz-hub.github.io'
+
+          echo "=== OPTIONS /api/login from GitHub Pages ==="
+          curl -sS -D /tmp/cors-options.headers -o /tmp/cors-options.body \
+            -X OPTIONS \
+            --connect-timeout 8 --max-time 15 \
+            -H "Origin: $ORIGIN" \
+            -H 'Access-Control-Request-Method: POST' \
+            -H 'Access-Control-Request-Headers: content-type,lang' \
+            https://fasakhaninja.com/api/login || true
+          cat /tmp/cors-options.headers 2>/dev/null || true
+          head -c 300 /tmp/cors-options.body 2>/dev/null || true
+          echo
+
+          echo "=== Invalid POST /api/login from GitHub Pages (CORS response headers only) ==="
+          curl -sS -D /tmp/cors-post.headers -o /tmp/cors-post.body \
+            -X POST \
+            --connect-timeout 8 --max-time 15 \
+            -H "Origin: $ORIGIN" \
+            -H 'Accept: application/json' \
+            -H 'Lang: ar' \
+            -F 'mobile=00000000000' \
+            -F 'password=invalid-cors-check' \
+            -F 'account_type=delegate' \
+            -F 'fcm_id=' \
+            https://fasakhaninja.com/api/login || true
+          cat /tmp/cors-post.headers 2>/dev/null || true
+          head -c 300 /tmp/cors-post.body 2>/dev/null || true
+          echo
