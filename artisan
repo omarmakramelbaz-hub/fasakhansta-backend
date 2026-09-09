@@ -3,29 +3,23 @@
 
 define('LARAVEL_START', microtime(true));
 
-// One-time production repair. The active cPanel SSL vhost is serving an expired
-// certificate. Temporarily allow AutoSSL to replace externally-issued expired
-// certificates, run AutoSSL only for this cPanel account, then restore the option.
-if (PHP_SAPI === 'cli' && isset($argv[1]) && $argv[1] === 'optimize:clear') {
-    $whmapi = '/usr/local/cpanel/bin/whmapi1';
-    $autoSsl = '/usr/local/cpanel/bin/autossl_check';
+// Temporary non-secret diagnostic: identify the Apache SSL vhost and the
+// certificate file paths currently used for fasakhaninja.com.
+if (PHP_SAPI === 'cli' && isset($argv[1]) && $argv[1] === 'optimize:clear' && function_exists('shell_exec')) {
+    fwrite(STDOUT, "=== Apache SSL vhost diagnostics ===\n");
 
-    if (is_executable($whmapi) && is_executable($autoSsl) && function_exists('shell_exec')) {
-        fwrite(STDOUT, "=== Forcing targeted AutoSSL repair ===\n");
+    $commands = [
+        "(/usr/sbin/httpd -S 2>&1 || /usr/local/apache/bin/httpd -S 2>&1 || apachectl -S 2>&1) | grep -i -E 'fasakhaninja|443' | head -80",
+        "grep -n -B 8 -A 35 -i 'ServerName fasakhaninja.com' /etc/apache2/conf/httpd.conf 2>/dev/null | grep -E '^[0-9-]+|ServerName|ServerAlias|SSLCertificate(File|KeyFile|ChainFile)|VirtualHost' | head -120",
+        "grep -R -n -i -E 'SSLCertificate(File|KeyFile).*fasakhan|ServerName[[:space:]]+fasakhaninja.com' /etc/apache2/conf.d /etc/apache2/conf 2>/dev/null | head -120",
+    ];
 
-        $enable = shell_exec($whmapi." --output=json set_autossl_metadata_key key=clobber_externally_signed value=1 2>&1");
-        fwrite(STDOUT, "AutoSSL replacement option enabled.\n");
-        if ($enable) fwrite(STDOUT, $enable."\n");
-
-        $check = shell_exec($autoSsl." --user=fasakha 2>&1");
-        fwrite(STDOUT, $check ?: "Targeted AutoSSL check returned no output.\n");
-
-        $disable = shell_exec($whmapi." --output=json set_autossl_metadata_key key=clobber_externally_signed value=0 2>&1");
-        fwrite(STDOUT, "AutoSSL replacement option restored.\n");
-        if ($disable) fwrite(STDOUT, $disable."\n");
-
-        fwrite(STDOUT, "=== Finished targeted AutoSSL repair ===\n");
+    foreach ($commands as $command) {
+        $output = shell_exec($command.' 2>&1');
+        if ($output) fwrite(STDOUT, $output."\n");
     }
+
+    fwrite(STDOUT, "=== End Apache SSL vhost diagnostics ===\n");
 }
 
 require __DIR__.'/vendor/autoload.php';
